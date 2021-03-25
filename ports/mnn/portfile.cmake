@@ -1,4 +1,4 @@
-vcpkg_fail_port_install(ON_ARCH "arm" ON_TARGET "uwp" "ios" "android")
+vcpkg_fail_port_install(ON_TARGET "uwp" "ios")
 if(VCPKG_TARGET_IS_WINDOWS)
   vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
@@ -6,11 +6,11 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO alibaba/MNN
-    REF 1.1.0
-    SHA512 3e31eec9a876be571cb2d29e0a2bcdb8209a43a43a5eeae19b295fadfb1252dd5bd4ed5b7c584706171e1b531710248193bc04520a796963e2b21546acbedae0
+    REF 1.1.4
+    SHA512 edd8e2eca4e57c2638e26add4449db00a5ff1e2e4cb11023aedf5a845d12c38d43faff730aee8af5197611fd2e45497802d5b6aa342b718046bc253d35032ad1
     HEAD_REF master
-    PATCHES
-        use-package-and-install.patch
+    # PATCHES
+    #     bbb.patch aaa.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -26,6 +26,8 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     opencl      MNN_USE_SYSTEM_LIB
     metal       MNN_METAL
     metal       MNN_GPU_TRACE
+    opengl      MNN_OPENGL
+    opengl      MNN_GPU_TRACE
     tools       MNN_BUILD_TOOLS
     tools       MNN_BUILD_QUANTOOLS
     tools       MNN_BUILD_TRAIN
@@ -42,6 +44,14 @@ endif()
 if(VCPKG_TARGET_IS_WINDOWS)
     string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_RUNTIME_MT)
     list(APPEND PLATFORM_OPTIONS -DMNN_WIN_RUNTIME_MT=${USE_RUNTIME_MT})
+elseif(VCPKG_TARGET_IS_ANDROID)
+    list(APPEND PLATFORM_OPTIONS -DMNN_USE_SSE=OFF)
+endif()
+
+if(VCPKG_TARGET_ARCHITECTURE MATCHES arm)
+    list(APPEND PLATFORM_OPTIONS -DMNN_USE_SSE=OFF -DMNN_ARM82=ON)
+elseif(VCPKG_TARGET_ARCHITECTURE MATCHES x86 OR VCPKG_TARGET_ARCHITECTURE MATCHES x64)
+    list(APPEND PLATFORM_OPTIONS -DMNN_AVX512=ON)
 endif()
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
@@ -52,8 +62,8 @@ vcpkg_configure_cmake(
     OPTIONS
         ${FEATURE_OPTIONS} ${PLATFORM_OPTIONS}
         -DMNN_BUILD_SHARED_LIBS=${BUILD_SHARED}
-        # 1.1.0.0-${commit}
-        -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=0 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-d6795ad
+        # 1.1.4.0-${commit}
+        -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=4 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-fa5b3cc4
     OPTIONS_DEBUG
         -DMNN_DEBUG_MEMORY=ON -DMNN_DEBUG_TENSOR_SIZE=ON
 )

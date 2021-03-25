@@ -4,7 +4,7 @@
   "description": "MNN is a blazing fast, lightweight deep learning framework, battle-tested by business-critical use cases in Alibaba",
   "homepage": "https://www.mnn.zone/",
   "license": "Apache-2.0",
-  "supports": "!(arm | uwp | ios | android)",
+  "supports": "!(uwp | ios)",
   "dependencies": [
     "flatbuffers",
     "rapidjson",
@@ -26,6 +26,9 @@
       "dependencies": [
         "opencl"
       ]
+    },
+    "opengl": {
+      "description": "Enable OpenGL API backend for Android platform"
     },
     "test": {
       "description": "Build MNN test programs"
