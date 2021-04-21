@@ -1,0 +1,7 @@
+{
+  "name": "qt-angle",
+  "version": "5.9",
+  "description": "ANGLE",
+  "homepage": "https://wiki.qt.io/Qt_5_on_Windows_ANGLE_and_OpenGL",
+  "supports": "windows | uwp"
+}

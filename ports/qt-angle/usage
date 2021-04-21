@@ -1,0 +1,15 @@
+Use this package via the module QtANGLE. To use in your CMakeLists.txt:
+
+    find_package(QtANGLE 5.9 REQUIRED
+    COMPONENTS
+        libEGL libGLESv2
+    )
+
+    target_link_libraries(main
+    PRIVATE
+        Qt5::libEGL Qt5::libGLESv2
+    )
+    file(COPY ${QtANGLE_EGL_LOCATION}  ${QtANGLE_EGL_PDB_LOCATION}
+              ${QtANGLE_GLES_LOCATION} ${QtANGLE_GLES_PDB_LOCATION}
+         DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
+    )
