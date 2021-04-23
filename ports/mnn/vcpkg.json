@@ -1,6 +1,6 @@
 {
   "name": "mnn",
-  "version-string": "1.1.0",
+  "version-string": "1.1.6",
   "description": "MNN is a blazing fast, lightweight deep learning framework, battle-tested by business-critical use cases in Alibaba",
   "homepage": "https://www.mnn.zone/",
   "license": "Apache-2.0",
@@ -41,6 +41,24 @@
       "dependencies": [
         "vulkan"
       ]
+    },
+    "opengl": {
+      "description": "Enable OpenGL API backend",
+      "dependencies": [
+        {
+          "name": "egl-registry",
+          "platform": "windows"
+        }
+      ]
+    },
+    "tensorrt": {
+      "description": "Enable Tensor RT backend",
+      "dependencies": [
+        "cuda"
+      ]
+    },
+    "codegen":{
+      "description":"Run codegen for MNN"
     }
   }
 }

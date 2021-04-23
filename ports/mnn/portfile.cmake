@@ -6,11 +6,11 @@ endif()
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO alibaba/MNN
-    REF 1.1.0
-    SHA512 3e31eec9a876be571cb2d29e0a2bcdb8209a43a43a5eeae19b295fadfb1252dd5bd4ed5b7c584706171e1b531710248193bc04520a796963e2b21546acbedae0
+    REF 1.1.6
+    SHA512 bdeef79fd5fd044cb5400a56acd39b183d44a3a03f3e7db0e67577c85bfb803b2b840a81480867f35b61888cecf3f0e7d3c32e56b509e41235558108a1debc9b
     HEAD_REF master
-    PATCHES
-        use-package-and-install.patch
+    # PATCHES
+    #     use-package-and-install.patch
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -26,18 +26,18 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     opencl      MNN_USE_SYSTEM_LIB
     metal       MNN_METAL
     metal       MNN_GPU_TRACE
+    opengl      MNN_OPENGL
+    opengl      MNN_OPENGL_REGEN
+    tensorrt    MNN_TENSORRT
+    tensorrt    MNN_TRT_DYNAMIC
     tools       MNN_BUILD_TOOLS
     tools       MNN_BUILD_QUANTOOLS
     tools       MNN_BUILD_TRAIN
     tools       MNN_EVALUATION
     tools       MNN_BUILD_CONVERTER
+    codegen     MNN_CODEGEN_C
+    opencl      MNN_CODEGEN_OPENCL
 )
-
-# 'cuda' feature in Windows failes with Ninja because of parallel PDB access. Make it optional
-set(NINJA_OPTION PREFER_NINJA) 
-if("cuda" IN_LIST FEATURES)
-    unset(NINJA_OPTION)
-endif()
 
 if(VCPKG_TARGET_IS_WINDOWS)
     string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_RUNTIME_MT)
@@ -48,17 +48,19 @@ string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
-    ${NINJA_OPTION}
+    PREFER_NINJA
     OPTIONS
         ${FEATURE_OPTIONS} ${PLATFORM_OPTIONS}
         -DMNN_BUILD_SHARED_LIBS=${BUILD_SHARED}
-        # 1.1.0.0-${commit}
-        -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=0 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-d6795ad
+        # 1.1.6.0-${commit}
+        -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=6 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-3dada34
     OPTIONS_DEBUG
         -DMNN_DEBUG_MEMORY=ON -DMNN_DEBUG_TENSOR_SIZE=ON
 )
 vcpkg_install_cmake()
 vcpkg_copy_pdbs()
+vcpkg_fixup_cmake_targets(CONFIG_PATH lib/cmake/MNN TARGET_PATH share/MNN)
+
 
 vcpkg_download_distfile(COPYRIGHT_PATH
     URLS "https://apache.org/licenses/LICENSE-2.0.txt" 
