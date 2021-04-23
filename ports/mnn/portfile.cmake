@@ -19,6 +19,9 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     test        MNN_BUILD_BENCHMARK
     cuda        MNN_CUDA
     cuda        MNN_GPU_TRACE
+    tensorrt    MNN_TENSORRT
+    tensorrt    MNN_TRT_DYNAMIC
+    tensorrt    MNN_GPU_TRACE
     vulkan      MNN_VULKAN
     vulkan      MNN_GPU_TRACE
     vulkan      MNN_USE_SYSTEM_LIB
@@ -28,15 +31,16 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     metal       MNN_GPU_TRACE
     opengl      MNN_OPENGL
     opengl      MNN_OPENGL_REGEN
-    tensorrt    MNN_TENSORRT
-    tensorrt    MNN_TRT_DYNAMIC
+    opengl      MNN_USE_SYSTEM_LIB
     tools       MNN_BUILD_TOOLS
     tools       MNN_BUILD_QUANTOOLS
     tools       MNN_BUILD_TRAIN
     tools       MNN_EVALUATION
     tools       MNN_BUILD_CONVERTER
-    codegen     MNN_CODEGEN_C
-    opencl      MNN_CODEGEN_OPENCL
+    # codegen     MNN_BUILD_CODEGEN # requires llvm
+    # codegen     MNN_CODEGEN_C
+    # opencl      MNN_CODEGEN_OPENCL
+    opencv      MNN_USE_OPENCV
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -52,9 +56,12 @@ vcpkg_configure_cmake(
     OPTIONS
         ${FEATURE_OPTIONS} ${PLATFORM_OPTIONS}
         -DMNN_BUILD_SHARED_LIBS=${BUILD_SHARED}
+        -DMNN_USE_SSE=ON -DMNN_AVX512=ON -DMNN_SUPPORT_BF16=OFF
+        -DMNN_USE_LOGCAT=${VCPKG_TARGET_IS_ANDROID}
         # 1.1.6.0-${commit}
         -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=6 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-3dada34
     OPTIONS_DEBUG
+        -DMNN_TRAIN_DEBUG=ON
         -DMNN_DEBUG_MEMORY=ON -DMNN_DEBUG_TENSOR_SIZE=ON
 )
 vcpkg_install_cmake()

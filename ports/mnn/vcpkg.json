@@ -11,6 +11,12 @@
     "stb"
   ],
   "features": {
+    "codegen": {
+      "description": "Run codegen for MNN",
+      "dependencies": [
+        "llvm"
+      ]
+    },
     "cuda": {
       "description": "Enable CUDA API backend",
       "dependencies": [
@@ -25,21 +31,6 @@
       "description": "Enable OpenCL API backend",
       "dependencies": [
         "opencl"
-      ]
-    },
-    "test": {
-      "description": "Build MNN test programs"
-    },
-    "tools": {
-      "description": "Build MNN tools",
-      "dependencies": [
-        "protobuf"
-      ]
-    },
-    "vulkan": {
-      "description": "Enable Vulkan API backend",
-      "dependencies": [
-        "vulkan"
       ]
     },
     "opengl": {
@@ -57,8 +48,21 @@
         "cuda"
       ]
     },
-    "codegen":{
-      "description":"Run codegen for MNN"
+    "test": {
+      "description": "Build MNN test programs"
+    },
+    "tools": {
+      "description": "Build MNN tools",
+      "dependencies": [
+        "opencv3",
+        "protobuf"
+      ]
+    },
+    "vulkan": {
+      "description": "Enable Vulkan API backend",
+      "dependencies": [
+        "vulkan"
+      ]
     }
   }
 }
