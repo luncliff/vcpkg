@@ -11,12 +11,6 @@
     "stb"
   ],
   "features": {
-    "codegen": {
-      "description": "Run codegen for MNN",
-      "dependencies": [
-        "llvm"
-      ]
-    },
     "cuda": {
       "description": "Enable CUDA API backend",
       "dependencies": [
@@ -46,16 +40,6 @@
       "description": "Enable Tensor RT backend",
       "dependencies": [
         "cuda"
-      ]
-    },
-    "test": {
-      "description": "Build MNN test programs"
-    },
-    "tools": {
-      "description": "Build MNN tools",
-      "dependencies": [
-        "opencv3",
-        "protobuf"
       ]
     },
     "vulkan": {
