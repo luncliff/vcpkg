@@ -1,4 +1,3 @@
-vcpkg_fail_port_install(ON_ARCH "arm" ON_TARGET "uwp" "ios" "android")
 if(VCPKG_TARGET_IS_WINDOWS)
   vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 endif()
@@ -27,33 +26,48 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     opencl      MNN_USE_SYSTEM_LIB
     metal       MNN_METAL
     metal       MNN_GPU_TRACE
-    opengl      MNN_OPENGL
-    opengl      MNN_USE_SYSTEM_LIB
+    opengl-es   MNN_OPENGL
+    opengl-es   MNN_USE_SYSTEM_LIB
+    opengl-es   MNN_GPU_TRACE
 )
+
 if("opengl" IN_LIST FEATURES)
     if(NOT (VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_WINDOWS))
         message(FATAL_ERROR "The feature 'opengl' requires EGL")
     endif()
 endif()
 
-vcpkg_find_acquire_program(PYTHON3)
+if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
+    list(APPEND PLATFORM_OPTIONS -DMNN_ARM82=ON)
+elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "x86"
+       AND NOT VCPKG_TARGET_IS_ANDROID)
+    # activate SSE/AVX targets
+    list(APPEND PLATFORM_OPTIONS -DMNN_USE_SSE=ON)
+    if(VCPKG_TARGET_ARCHITECTURE MATCHES "64")
+        list(APPEND PLATFORM_OPTIONS -DMNN_AVX512=ON)
+    endif()
+else()
+    list(APPEND PLATFORM_OPTIONS -DMNN_USE_SSE=OFF)
+endif()
 
-string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
+string(COMPARE EQUAL ${VCPKG_LIBRARY_LINKAGE} "dynamic" BUILD_SHARED)
+
+vcpkg_find_acquire_program(PYTHON3)
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
     OPTIONS
         ${FEATURE_OPTIONS}
+        ${PLATFORM_OPTIONS} -DMNN_USE_LOGCAT=${VCPKG_TARGET_IS_ANDROID} -DMNN_SUPPORT_BF16=OFF
         -DPYTHON_EXECUTABLE=${PYTHON3}
         -DMNN_BUILD_SHARED_LIBS=${BUILD_SHARED}
-        -DMNN_USE_SSE=ON -DMNN_AVX512=ON -DMNN_SUPPORT_BF16=OFF
-        -DMNN_USE_LOGCAT=${VCPKG_TARGET_IS_ANDROID}
         # 1.1.6.0-${commit}
         -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=6 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-3dada34
         -DMNN_OPENGL_REGEN=OFF
     OPTIONS_DEBUG
         -DMNN_TRAIN_DEBUG=ON
+        -DMNN_EXPR_ENABLE_PROFILER=ON
         -DMNN_DEBUG_MEMORY=ON -DMNN_DEBUG_TENSOR_SIZE=ON
 )
 vcpkg_install_cmake()

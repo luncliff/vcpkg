@@ -12,7 +12,7 @@
   ],
   "features": {
     "cuda": {
-      "description": "Enable CUDA API backend",
+      "description": "Enable NVIDIA CUDA API backend",
       "dependencies": [
         "cuda",
         "cudnn"
@@ -27,8 +27,8 @@
         "opencl"
       ]
     },
-    "opengl": {
-      "description": "Enable OpenGL API backend",
+    "opengl-es": {
+      "description": "Enable OpenGL ES API backend",
       "dependencies": [
         {
           "name": "egl-registry",
@@ -37,7 +37,7 @@
       ]
     },
     "tensorrt": {
-      "description": "Enable Tensor RT backend",
+      "description": "Enable NVIDIA TensorRT backend",
       "dependencies": [
         "cuda"
       ]
