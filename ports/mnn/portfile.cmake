@@ -15,39 +15,42 @@ vcpkg_from_github(
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
   FEATURES
     cuda        MNN_CUDA
-    cuda        MNN_GPU_TRACE
     tensorrt    MNN_TENSORRT
     tensorrt    MNN_TRT_DYNAMIC
-    tensorrt    MNN_GPU_TRACE
     vulkan      MNN_VULKAN
-    vulkan      MNN_GPU_TRACE
-    vulkan      MNN_USE_SYSTEM_LIB
     opencl      MNN_OPENCL
-    opencl      MNN_USE_SYSTEM_LIB
     metal       MNN_METAL
-    metal       MNN_GPU_TRACE
     opengl-es   MNN_OPENGL
-    opengl-es   MNN_USE_SYSTEM_LIB
-    opengl-es   MNN_GPU_TRACE
 )
 
-if("opengl" IN_LIST FEATURES)
+if("opengl-es" IN_LIST FEATURES)
     if(NOT (VCPKG_TARGET_IS_ANDROID OR VCPKG_TARGET_IS_WINDOWS))
-        message(FATAL_ERROR "The feature 'opengl' requires EGL")
+        message(FATAL_ERROR "The feature 'opengl-es' requires EGL")
+    endif()
+endif()
+if(VCPKG_TARGET_IS_ANDROID)
+    if(DEFINED NDK_VULKAN_LIB_PATH)
+        list(APPEND PLATFORM_OPTIONS -DVulkan_LIBRARY:FILEPATH=${NDK_VULKAN_LIB_PATH})
     endif()
 endif()
 
+# Activate SSE/AVX/ARM targets
 if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
-    list(APPEND PLATFORM_OPTIONS -DMNN_ARM82=ON)
-elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "x86"
-       AND NOT VCPKG_TARGET_IS_ANDROID)
-    # activate SSE/AVX targets
-    list(APPEND PLATFORM_OPTIONS -DMNN_USE_SSE=ON)
+    list(APPEND ARCH_OPTIONS -DMNN_ARM82=ON
+                             -DMNN_USE_SSE=OFF
+                             -DARCHS=${VCPKG_TARGET_ARCHITECTURE} # ARCHS=arm64
+    )
+elseif(NOT VCPKG_TARGET_IS_ANDROID AND
+       VCPKG_TARGET_ARCHITECTURE MATCHES "x86")
+    list(APPEND ARCH_OPTIONS -DMNN_USE_SSE=ON)
     if(VCPKG_TARGET_ARCHITECTURE MATCHES "64")
-        list(APPEND PLATFORM_OPTIONS -DMNN_AVX512=ON)
+        list(APPEND ARCH_OPTIONS -DMNN_AVX512=ON)
     endif()
 else()
-    list(APPEND PLATFORM_OPTIONS -DMNN_USE_SSE=OFF)
+    # no architecture specific build
+    list(APPEND ARCH_OPTIONS -DMNN_ARM82=OFF
+                             -DMNN_USE_SSE=OFF
+    )
 endif()
 
 string(COMPARE EQUAL ${VCPKG_LIBRARY_LINKAGE} "dynamic" BUILD_SHARED)
@@ -58,17 +61,25 @@ vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
     OPTIONS
-        ${FEATURE_OPTIONS}
-        ${PLATFORM_OPTIONS} -DMNN_USE_LOGCAT=${VCPKG_TARGET_IS_ANDROID} -DMNN_SUPPORT_BF16=OFF
+        ${FEATURE_OPTIONS} ${ARCH_OPTIONS} ${PLATFORM_OPTIONS}
         -DPYTHON_EXECUTABLE=${PYTHON3}
         -DMNN_BUILD_SHARED_LIBS=${BUILD_SHARED}
-        # 1.1.6.0-${commit}
-        -DMNN_VERSION_MAJOR=1 -DMNN_VERSION_MINOR=1 -DMNN_VERSION_PATCH=6 -DMNN_VERSION_BUILD=0 -DMNN_VERSION_SUFFIX=-3dada34
+        -DMNN_USE_LOGCAT=${VCPKG_TARGET_IS_ANDROID}
+        -DMNN_USE_SYSTEM_LIB=ON
+        -DMNN_SUPPORT_BF16=OFF
+        -DMNN_GPU_TRACE=ON
         -DMNN_OPENGL_REGEN=OFF
+        # 1.1.6.0-${commit}
+        -DMNN_VERSION_MAJOR=1
+        -DMNN_VERSION_MINOR=1
+        -DMNN_VERSION_PATCH=6
+        -DMNN_VERSION_BUILD=0
+        -DMNN_VERSION_SUFFIX=-3dada34
     OPTIONS_DEBUG
-        -DMNN_TRAIN_DEBUG=ON
+        -DMNN_DEBUG_MEMORY=ON
+        -DMNN_DEBUG_TENSOR_SIZE=ON
         -DMNN_EXPR_ENABLE_PROFILER=ON
-        -DMNN_DEBUG_MEMORY=ON -DMNN_DEBUG_TENSOR_SIZE=ON
+        -DMNN_TRAIN_DEBUG=ON
 )
 vcpkg_install_cmake()
 vcpkg_copy_pdbs()
@@ -81,16 +92,8 @@ vcpkg_download_distfile(COPYRIGHT_PATH
 )
 file(RENAME ${COPYRIGHT_PATH} ${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright)
 
-if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
-    if("metal" IN_LIST FEATURES)
-        file(RENAME ${CURRENT_PACKAGES_DIR}/bin/mnn.metallib
-                    ${CURRENT_PACKAGES_DIR}/lib/mnn.metallib)
-    endif()
-endif()
-
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
-    # remove the others. ex) mnn.metallib
     file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin
                         ${CURRENT_PACKAGES_DIR}/debug/bin)
 endif()

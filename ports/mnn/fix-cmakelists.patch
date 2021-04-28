@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 177e1956..b23c82bb 100644
+index 177e1956..d449b950 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -48,7 +48,7 @@ index 177e1956..b23c82bb 100644
 -#    COMMENT "Generating Version Control Info"
 -#)
 -#add_custom_target (GenVCSHDR DEPENDS "${CMAKE_CURRENT_LIST_DIR}/include/MNN/VCS.h")
-+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
++list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 +
  # Required for OpenCL/OpenGL/Vulkan CodeGen
  include(FindPythonInterp REQUIRED)
@@ -192,7 +192,7 @@ index 177e1956..b23c82bb 100644
  
  
  message(STATUS ">>>>>>>>>>>>>")
-@@ -189,277 +175,178 @@ message(STATUS "\tThreadPool: ${MNN_USE_THREAD_POOL}")
+@@ -189,277 +175,176 @@ message(STATUS "\tThreadPool: ${MNN_USE_THREAD_POOL}")
  message(STATUS "\tHidden: ${MNN_HIDDEN}")
  message(STATUS "\tBuild Path: ${CMAKE_CURRENT_BINARY_DIR}")
  
@@ -325,41 +325,36 @@ index 177e1956..b23c82bb 100644
 -                    ${CMAKE_CURRENT_LIST_DIR}/3rd_party/OpenCLHeaders/
 -                  )
  
-+if(MNN_SEP_BUILD)
-+  add_library(MNN SHARED ${CMAKE_CURRENT_LIST_DIR}/cmake/dummy.cpp)
-+else()
-+  if(MNN_BUILD_SHARED_LIBS)
-+    add_library(MNN SHARED ${CMAKE_CURRENT_LIST_DIR}/cmake/dummy.cpp)
-+    if(WIN32)
-+      add_compile_definitions(BUILDING_MNN_DLL USING_MNN_DLL)
-+      target_compile_definitions(MNN
-+      PUBLIC
-+        USING_MNN_DLL
-+      PRIVATE
-+        BUILDING_MNN_DLL
-+      )
-+    endif()
-+  else()
-+    add_library(MNN STATIC ${CMAKE_CURRENT_LIST_DIR}/cmake/dummy.cpp)
-+  endif()
-+endif()
++add_library(MNN INTERFACE)
  
 -set(MNN_OBJECTS_TO_LINK "")
 -set(MNN_TARGETS "")
-+find_package(Flatbuffers CONFIG REQUIRED)
++if(MNN_BUILD_SHARED_LIBS)
++  if(WIN32)
++    add_compile_definitions(BUILDING_MNN_DLL USING_MNN_DLL)
++    target_compile_definitions(MNN
++    INTERFACE
++      USING_MNN_DLL
++    )
++  endif()
++endif()
  
 -# Core
++find_package(Flatbuffers CONFIG REQUIRED)
++
 +# Core, CV, Math, Transform, Utils
  FILE(GLOB MNN_Core_SRC ${CMAKE_CURRENT_LIST_DIR}/source/core/*)
 -add_library(MNNCore OBJECT ${MNN_Core_SRC})
 -list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNNCore>)
 -list(APPEND MNN_TARGETS MNNCore)
+-if(MNN_BUILD_MINI)
+-    target_compile_options(MNNCore PRIVATE -DMNN_BUILD_MINI)
 +FILE(GLOB MNN_CV_SRC ${CMAKE_CURRENT_LIST_DIR}/source/cv/*)
 +FILE(GLOB MNN_Math_SRC ${CMAKE_CURRENT_LIST_DIR}/source/math/*)
 +FILE(GLOB MNN_Transform_SRC ${CMAKE_CURRENT_LIST_DIR}/source/shape/* ${CMAKE_CURRENT_LIST_DIR}/source/geometry/*)
 +FILE(GLOB MNN_Utils_SRC ${CMAKE_CURRENT_LIST_DIR}/source/utils/*)
 +
-+add_library(MNNCore
++add_library(MNNCore STATIC
 +  ${MNN_Core_SRC} ${MNN_CV_SRC} ${MNN_Math_SRC} ${MNN_Transform_SRC} ${MNN_Utils_SRC}
 +)
 +
@@ -374,18 +369,19 @@ index 177e1956..b23c82bb 100644
 +PUBLIC
 +  flatbuffers::flatbuffers
 +)
-+
- if(MNN_BUILD_MINI)
--    target_compile_options(MNNCore PRIVATE -DMNN_BUILD_MINI)
-+    target_compile_definitions(MNNCore PRIVATE MNN_BUILD_MINI)
++if(ANDROID)
++  target_link_libraries(MNNCore PUBLIC log)
  endif()
--
+ 
 -# CV
 -FILE(GLOB MNN_CV_SRC ${CMAKE_CURRENT_LIST_DIR}/source/cv/*)
 -add_library(MNNCV OBJECT ${MNN_CV_SRC})
 -list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNNCV>)
 -list(APPEND MNN_TARGETS MNNCV)
 -if (MNN_USE_SSE)
++if(MNN_BUILD_MINI)
++    target_compile_definitions(MNNCore PRIVATE MNN_BUILD_MINI)
++endif()
 +if(MNN_USE_SSE)
      if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(X86_64)|(x64)|(X64)|(amd64)|(AMD64)|(i686)")
 -        if (NOT MSVC)
@@ -403,11 +399,6 @@ index 177e1956..b23c82bb 100644
 -list(APPEND MNN_TARGETS MNNMath)
 +# target: MNNCPU, MNN_BF16 ...
 +add_subdirectory(source/backend/cpu)
-+if(MNN_ARM82)
-+    add_subdirectory(source/arm82)
-+    target_compile_definitions(MNNCPU PRIVATE ENABLE_ARMV82)
-+    target_link_libraries(MNN PUBLIC MNN_Arm82)
-+endif()
  
 -# Transform
 -FILE(GLOB MNN_Transform_SRC ${CMAKE_CURRENT_LIST_DIR}/source/shape/* ${CMAKE_CURRENT_LIST_DIR}/source/geometry/*)
@@ -416,28 +407,10 @@ index 177e1956..b23c82bb 100644
 -    list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNNTransform>)
 -ENDIF()
 -list(APPEND MNN_TARGETS MNNTransform)
-+list(APPEND MNN_PUB_HDRS
-+  include/MNN/MNNDefine.h
-+  include/MNN/Interpreter.hpp
-+  include/MNN/HalideRuntime.h
-+  include/MNN/Tensor.hpp
-+  include/MNN/ErrorCode.hpp
-+  include/MNN/ImageProcess.hpp
-+  include/MNN/Matrix.h
-+  include/MNN/Rect.h
-+  include/MNN/MNNForwardType.h
-+  include/MNN/AutoTime.hpp
-+)
-+list(APPEND MNN_EXPR_PUB_HDRS
-+  include/MNN/expr/Expr.hpp
-+  include/MNN/expr/ExprCreator.hpp
-+  include/MNN/expr/MathOp.hpp
-+  include/MNN/expr/NeuralNetWorkOp.hpp
-+  include/MNN/expr/Optimizer.hpp
-+  include/MNN/expr/Executor.hpp
-+  include/MNN/expr/Module.hpp
-+  include/MNN/expr/NeuralNetWorkOp.hpp
-+)
++# target: MNN_Arm82
++if(MNN_ARM82)
++    add_subdirectory(source/backend/arm82)
++endif()
  
 -# Utils
 -FILE(GLOB MNN_Utils_SRC ${CMAKE_CURRENT_LIST_DIR}/source/utils/*)
@@ -473,6 +446,29 @@ index 177e1956..b23c82bb 100644
 -set(MNN_EXTRA_DEPENDS "")
 -
 -if (NOT APPLE)
++list(APPEND MNN_PUB_HDRS
++  include/MNN/MNNDefine.h
++  include/MNN/Interpreter.hpp
++  include/MNN/HalideRuntime.h
++  include/MNN/Tensor.hpp
++  include/MNN/ErrorCode.hpp
++  include/MNN/ImageProcess.hpp
++  include/MNN/Matrix.h
++  include/MNN/Rect.h
++  include/MNN/MNNForwardType.h
++  include/MNN/AutoTime.hpp
++)
++list(APPEND MNN_EXPR_PUB_HDRS
++  include/MNN/expr/Expr.hpp
++  include/MNN/expr/ExprCreator.hpp
++  include/MNN/expr/MathOp.hpp
++  include/MNN/expr/NeuralNetWorkOp.hpp
++  include/MNN/expr/Optimizer.hpp
++  include/MNN/expr/Executor.hpp
++  include/MNN/expr/Module.hpp
++  include/MNN/expr/NeuralNetWorkOp.hpp
++)
++
 +if(NOT APPLE)
    if(MNN_OPENMP)
 -      message(STATUS "[*] Checking OpenMP")
@@ -500,7 +496,7 @@ index 177e1956..b23c82bb 100644
 -    endif()
 +      find_package(Threads REQUIRED)
 +      find_package(OpenMP REQUIRED)
-+      target_link_libraries(MNN PUBLIC Threads::Threads OpenMP::OpenMP_CXX)
++      target_link_libraries(MNNCore PUBLIC Threads::Threads OpenMP::OpenMP_CXX)
 +  endif()
  endif()
  
@@ -547,8 +543,9 @@ index 177e1956..b23c82bb 100644
 -    include(${CMAKE_CURRENT_LIST_DIR}/source/backend/metal/CMakeLists.txt)
 -    list(APPEND MNN_TARGETS MNNMetal)
 -    list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNNMetal>)
-+    add_compile_definitions(MNN_METAL_ENABLED=1)
++    target_compile_definitions(MNNCore PUBLIC MNN_METAL_ENABLED=1)
 +    add_subdirectory(source/backend/metal) # MNNMetal
++    target_link_libraries(MNN INTERFACE MNNMetal)
  endif()
  
  # Vulkan
@@ -564,6 +561,7 @@ index 177e1956..b23c82bb 100644
 -ENDIF()
 +if(MNN_VULKAN)
 +    add_subdirectory(source/backend/vulkan) # MNN_Vulkan
++    target_link_libraries(MNN INTERFACE MNN_Vulkan)
 +endif()
  
  # oneDNN
@@ -587,7 +585,7 @@ index 177e1956..b23c82bb 100644
      file(GLOB_RECURSE OBJECT_FILES ${ONEDNN_DIR}/src/cpu/x64/CMakeFiles/dnnl_cpu_x64.dir/*.o)
      set_property(TARGET ONEDNN_CPU_X64 PROPERTY IMPORTED_OBJECTS ${OBJECT_FILES})
      include_directories(${ONEDNN_DIR}/include)
-@@ -469,117 +356,85 @@ IF(MNN_ONEDNN)
+@@ -469,117 +354,85 @@ IF(MNN_ONEDNN)
      list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:ONEDNN_COMMON>)
      list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:ONEDNN_CPU>)
      list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:ONEDNN_CPU_X64>)
@@ -609,7 +607,7 @@ index 177e1956..b23c82bb 100644
 +if(MNN_OPENCL)
 +  find_package(OpenCL REQUIRED)
 +  add_subdirectory(source/backend/opencl) # MNN_CL
-+  target_link_libraries(MNN PUBLIC MNN_CL)
++  target_link_libraries(MNN INTERFACE MNN_CL)
 +endif()
  
  # OpenGL
@@ -626,7 +624,7 @@ index 177e1956..b23c82bb 100644
 -ENDIF()
 +if(MNN_OPENGL)
 +  add_subdirectory(source/backend/opengl) # MNN_GL
-+  target_link_libraries(MNN PUBLIC MNN_GL)
++  target_link_libraries(MNN INTERFACE MNN_GL)
 +endif()
  
  # CUDA
@@ -638,7 +636,7 @@ index 177e1956..b23c82bb 100644
 -ENDIF()
 +if(MNN_CUDA)
 +  add_subdirectory(source/backend/cuda) # MNN_CUDA
-+  target_link_libraries(MNN PUBLIC MNN_CUDA)
++  target_link_libraries(MNN INTERFACE MNN_CUDA)
 +endif()
  
  # Express
@@ -650,7 +648,7 @@ index 177e1956..b23c82bb 100644
 -   list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNN_Express>)
 -ENDIF()
 +add_subdirectory(express) # MNN_Express
-+target_link_libraries(MNN PUBLIC MNN_Express)
++target_link_libraries(MNN INTERFACE MNN_Express)
 +
 +find_package(RapidJSON CONFIG REQUIRED)
 +# include_directories(
@@ -696,7 +694,7 @@ index 177e1956..b23c82bb 100644
 +if(FALSE) # MNN_NPU
 +    add_subdirectory(source/backend/hiai)
 +    if(MNN_SEP_BUILD)
-+        target_link_libraries(MNN PUBLIC MNN_NPU)
++        target_link_libraries(MNN INTERFACE MNN_NPU)
 +    else()
 +        # todo
          list(APPEND MNN_EXTRA_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/source/backend/hiai/3rdParty/${ANDROID_ABI}/libhiai.so)
@@ -704,7 +702,7 @@ index 177e1956..b23c82bb 100644
          list(APPEND MNN_EXTRA_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/source/backend/hiai/3rdParty/${ANDROID_ABI}/libhiai_ir.so)
 -    ENDIF()
 -ENDIF()
-+        target_link_libraries(MNN PUBLIC ${MNN_EXTRA_DEPENDS})
++        target_link_libraries(MNN INTERFACE ${MNN_EXTRA_DEPENDS})
 +    endif()
 +endif()
  
@@ -739,7 +737,7 @@ index 177e1956..b23c82bb 100644
 -  target_link_options(MNN PRIVATE "/IGNORE:4049,4217")
 +if(MNN_TENSORRT)
 +  add_subdirectory(source/backend/tensorrt) # MNN_TRT
-+  target_link_libraries(MNN PUBLIC MNN_TRT)
++  target_link_libraries(MNN INTERFACE MNN_TRT)
  endif()
 -if (MNN_ONEDNN)
 -    add_dependencies(MNN ONEDNN_COMMON ONEDNN_CPU ONEDNN_CPU_X64)
@@ -761,7 +759,7 @@ index 177e1956..b23c82bb 100644
        set_target_properties(MNN PROPERTIES FRAMEWORK TRUE)
        set_target_properties(MNN PROPERTIES
            MACOSX_FRAMEWORK_IDENTIFIER com.alibaba.MNN
-@@ -588,116 +443,81 @@ if(APPLE)
+@@ -588,116 +441,82 @@ if(APPLE)
            XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
        )
        set_target_properties(MNN PROPERTIES MACOSX_FRAMEWORK_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/project/ios/MNN/Info.plist)
@@ -770,26 +768,31 @@ index 177e1956..b23c82bb 100644
 +    endif()
 +    if(MNN_METAL)
        find_library(FOUNDATION Foundation REQUIRED)
-       target_link_libraries(MNN PUBLIC ${FOUNDATION})
+-      target_link_libraries(MNN PUBLIC ${FOUNDATION})
++      target_link_libraries(MNN INTERFACE ${FOUNDATION})
        find_library(METAL Metal REQUIRED)
-       target_link_libraries(MNN PUBLIC ${METAL})
+-      target_link_libraries(MNN PUBLIC ${METAL})
++      target_link_libraries(MNN INTERFACE ${METAL})
        find_library(GRAPHIC CoreGraphics)
-       target_link_libraries(MNN PUBLIC ${GRAPHIC})
+-      target_link_libraries(MNN PUBLIC ${GRAPHIC})
 -    ENDIF()
++      target_link_libraries(MNN INTERFACE ${GRAPHIC})
 +    endif()
  endif()
 -add_dependencies(MNN MNNCore MNNCV MNNTransform MNNMath MNNCPU)
 -add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tools/converter)
-+target_link_libraries(MNN PUBLIC MNNCore MNNCPU)
++target_link_libraries(MNN INTERFACE MNNCore MNNCPU)
  
  if(CMAKE_SYSTEM_NAME MATCHES "^Linux")
 -# Using -pthread, needed by thread-safe implemention of glibc, is better than only using -lpthread
 -# https://stackoverflow.com/questions/23250863/difference-between-pthread-and-lpthread-while-compiling
+-  target_link_libraries(MNN PUBLIC -pthread dl)
 +  # Using -pthread, needed by thread-safe implemention of glibc, is better than only using -lpthread
 +  # https://stackoverflow.com/questions/23250863/difference-between-pthread-and-lpthread-while-compiling
-   target_link_libraries(MNN PUBLIC -pthread dl)
++  target_link_libraries(MNN INTERFACE -pthread dl)
  elseif(CMAKE_SYSTEM_NAME MATCHES "^Android")
-   target_link_libraries(MNN PUBLIC log m)
+-  target_link_libraries(MNN PUBLIC log m)
++  target_link_libraries(MNN INTERFACE log m)
  else()
 +  # ...
  endif()
@@ -806,10 +809,7 @@ index 177e1956..b23c82bb 100644
 -            set(MNN_DEPS -Wl,--whole-archive ${MNN_DEPS} -Wl,--no-whole-archive)
 -        endif()
 -    endif()
-+
-+if(MNN_BUILD_CONVERTER)
-+  add_subdirectory(tools/converter)
- endif()
+-endif()
 -list(APPEND MNN_TARGETS MNN)
 -list(REMOVE_ITEM MNN_TARGETS MNN)
 -IF(MNN_BUILD_DEMO)
@@ -878,6 +878,10 @@ index 177e1956..b23c82bb 100644
 -      ARCHIVE DESTINATION lib
 -      FRAMEWORK DESTINATION /Library/Frameworks/
 -  )
++
++# if(MNN_BUILD_CONVERTER)
++#   add_subdirectory(tools/converter)
++# endif()
 +# if(MNN_BUILD_DEMO)
 +#   add_subdirectory(demo/exec/CMakeLists.txt)
 +# endif()
@@ -920,7 +924,8 @@ index 177e1956..b23c82bb 100644
 +    FRAMEWORK DESTINATION Library/Frameworks/
 +)
 +install(EXPORT MNNConfig
-+    DESTINATION lib/cmake/MNN
++        NAMESPACE unofficial::
++        DESTINATION lib/cmake/MNN
 +)
 +
 +if(APPLE)
@@ -1041,10 +1046,10 @@ index eda621dc..93556511 100644
 +    RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
 diff --git a/express/CMakeLists.txt b/express/CMakeLists.txt
-index f7f1d8e6..b85d4099 100644
+index f7f1d8e6..ff4d238f 100644
 --- a/express/CMakeLists.txt
 +++ b/express/CMakeLists.txt
-@@ -1,21 +1,24 @@
+@@ -1,21 +1,38 @@
 -file(GLOB_RECURSE MNN_EXPR_SRCS "${CMAKE_CURRENT_LIST_DIR}/*.*")
 +file(GLOB_RECURSE MNN_EXPR_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*.*")
 +
@@ -1059,7 +1064,25 @@ index f7f1d8e6..b85d4099 100644
 -IF(MNN_SEP_BUILD)
 -    if (MNN_BUILD_FOR_ANDROID_COMMAND)
 -        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "../")
--    endif()
++
++add_library(MNN_Express ${MNN_EXPR_SRCS})
++
++target_include_directories(MNN_Express
++PUBLIC
++    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
++)
++
++target_link_libraries(MNN_Express PRIVATE MNNCore)
++if(ANDROID)
++    target_link_libraries(MNN_Express PUBLIC log)
++endif()
++if(MNN_ARM82)
++    target_link_libraries(MNN_Express PUBLIC MNN_Arm82)
++    if(TARGET MNNARM32) # for MNNPack
++        target_link_libraries(MNN_Express PRIVATE MNNARM32)
++    elseif(TARGET MNNARM64)
++        target_link_libraries(MNN_Express PRIVATE MNNARM64)
+     endif()
 -    add_library(MNN_Express SHARED ${MNN_EXPR_SRCS})
 -    target_link_libraries(MNN_Express MNN)
 -    if (MNN_BUILD_MINI)
@@ -1068,20 +1091,15 @@ index f7f1d8e6..b85d4099 100644
 -ELSE()
 -    add_library(MNN_Express OBJECT ${MNN_EXPR_SRCS})
 -ENDIF()
-+
-+add_library(MNN_Express ${MNN_EXPR_SRCS})
-+
-+target_include_directories(MNN_Express
-+PUBLIC
-+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-+)
-+target_link_libraries(MNN_Express PUBLIC MNNCore)
++else()
++    target_link_libraries(MNN_Express PRIVATE MNNCPU)
++endif()
 +
 +if(MNN_EXPR_ENABLE_PROFILER)
 +    target_compile_definitions(MNN_Express PRIVATE MNN_EXPR_ENABLE_PROFILER)
 +endif()
 +if(MNN_EXPR_SHAPE_EAGER)
-+    target_compile_definitions(MNN_Express PUBLIC MNN_EXPR_SHAPE_EAGER)
++    target_compile_definitions(MNN_Express PRIVATE MNN_EXPR_SHAPE_EAGER)
 +endif()
 +
 +install(TARGETS MNN_Express
@@ -1120,10 +1138,10 @@ index 71b85788..17bc7e2b 100644
      set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4005 /wd4267")
      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4005 /wd4267")
 diff --git a/source/backend/arm82/CMakeLists.txt b/source/backend/arm82/CMakeLists.txt
-index 466ea304..a8e70f39 100644
+index 466ea304..254e8b21 100644
 --- a/source/backend/arm82/CMakeLists.txt
 +++ b/source/backend/arm82/CMakeLists.txt
-@@ -1,18 +1,25 @@
+@@ -1,18 +1,37 @@
  
 -file(GLOB MNN_ARM82_SRCS "${CMAKE_CURRENT_LIST_DIR}/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/compute/*.cpp")
 +file(GLOB MNN_ARM82_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/compute/*.cpp")
@@ -1131,37 +1149,52 @@ index 466ea304..a8e70f39 100644
  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7" OR ARCHS MATCHES "^armv7(;armv7s)?")
 -    file(GLOB MNN_ARM82_SRCS_ASM "${CMAKE_CURRENT_LIST_DIR}/asm/arm32/*")
 -    add_library(MNN_Arm82 OBJECT ${MNN_ARM82_SRCS} ${MNN_ARM82_SRCS_ASM})
+-    target_compile_options(MNN_Arm82 PRIVATE -march=armv8.2-a+fp16 -mfpu=neon-fp-armv8 -mfloat-abi=softfp)
 +    file(GLOB MNN_ARM82_SRCS_ASM "${CMAKE_CURRENT_SOURCE_DIR}/asm/arm32/*")
 +    add_library(MNN_Arm82 ${MNN_ARM82_SRCS} ${MNN_ARM82_SRCS_ASM})
-     target_compile_options(MNN_Arm82 PRIVATE -march=armv8.2-a+fp16 -mfpu=neon-fp-armv8 -mfloat-abi=softfp)
++    target_compile_options(MNN_Arm82
++    PRIVATE
++        -march=armv8.2-a+fp16 -mfpu=neon-fp-armv8 -mfloat-abi=softfp
++    )
  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64" OR ARCHS STREQUAL "arm64")
 -    file(GLOB MNN_ARM82_SRCS_ASM "${CMAKE_CURRENT_LIST_DIR}/asm/arm64/*")
 -    add_library(MNN_Arm82 OBJECT ${MNN_ARM82_SRCS} ${MNN_ARM82_SRCS_ASM})
+-    target_compile_options(MNN_Arm82 PRIVATE -march=armv8.2-a+fp16)
 +    file(GLOB MNN_ARM82_SRCS_ASM "${CMAKE_CURRENT_SOURCE_DIR}/asm/arm64/*")
 +    add_library(MNN_Arm82 ${MNN_ARM82_SRCS} ${MNN_ARM82_SRCS_ASM})
-     target_compile_options(MNN_Arm82 PRIVATE -march=armv8.2-a+fp16)
++    target_compile_options(MNN_Arm82
++    PRIVATE
++        -march=armv8.2-a+fp16
++    )
  else()
- # Building fat binary requires multiple seperate builds and lipo-by-hand under CMake's design
+-# Building fat binary requires multiple seperate builds and lipo-by-hand under CMake's design
++    # Building fat binary requires multiple seperate builds and lipo-by-hand under CMake's design
++    message(FATAL_ERROR "${CMAKE_SYSTEM_PROCESSOR} ${ARCHS}")
  endif()
  
 -target_include_directories(MNN_Arm82 PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 -target_include_directories(MNN_Arm82 PRIVATE ${CMAKE_CURRENT_LIST_DIR}/compute/)
 -target_include_directories(MNN_Arm82 PRIVATE ${CMAKE_CURRENT_LIST_DIR}/asm/)
-+target_include_directories(MNN_Arm82 PRIVATE
++target_include_directories(MNN_Arm82
++PRIVATE
 +    ${CMAKE_CURRENT_SOURCE_DIR}
 +    ${CMAKE_CURRENT_SOURCE_DIR}/compute/
 +    ${CMAKE_CURRENT_SOURCE_DIR}/asm/
 +)
++target_link_libraries(MNN_Arm82 PRIVATE MNNCore MNNCPU)
++if(ANDROID)
++    target_link_libraries(MNN_Arm82 PUBLIC log)
++endif()
 +
 +install(TARGETS MNN_Arm82
 +    EXPORT MNNConfig
 +    RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
 diff --git a/source/backend/cpu/CMakeLists.txt b/source/backend/cpu/CMakeLists.txt
-index c82ddc5d..af7967b4 100644
+index c82ddc5d..7c54d3ca 100644
 --- a/source/backend/cpu/CMakeLists.txt
 +++ b/source/backend/cpu/CMakeLists.txt
-@@ -1,34 +1,46 @@
+@@ -1,34 +1,45 @@
  # CPU
  option(MNN_SUPPORT_BF16 "Enable MNN's bf16 op" OFF)
 -FILE(GLOB MNN_CPU_SRC ${CMAKE_CURRENT_LIST_DIR}/* ${CMAKE_CURRENT_LIST_DIR}/compute/*)
@@ -1173,12 +1206,9 @@ index c82ddc5d..af7967b4 100644
 -    add_definitions(-DMNN_SUPPORT_BF16) # MNNCPU and MNNARM32 need to know flag MNN_SUPPORT_BF16
 +
 +FILE(GLOB MNN_CPU_SRC ${CMAKE_CURRENT_SOURCE_DIR}/* ${CMAKE_CURRENT_SOURCE_DIR}/compute/*)
-+add_library(MNNCPU ${MNN_CPU_SRC})
++add_library(MNNCPU STATIC ${MNN_CPU_SRC})
 +
-+target_link_libraries(MNNCPU
-+PRIVATE
-+    MNNCore
-+)
++target_link_libraries(MNNCPU PRIVATE MNNCore)
 +
 +if(MNN_SUPPORT_BF16)
 +    add_subdirectory(bf16)
@@ -1196,21 +1226,25 @@ index c82ddc5d..af7967b4 100644
 +if(MNN_USE_SSE)
 +    add_subdirectory(x86_x64)
 +    if(TARGET MNNAVX512)
-+        target_link_libraries(MNNCPU PUBLIC MNNAVX512)
++        target_link_libraries(MNNCPU PRIVATE MNNAVX512)
 +    endif()
 +    if(TARGET MNNSSE)
-+        target_link_libraries(MNNCPU PUBLIC MNNX8664 MNNAVX MNNAVXFMA MNNSSE)
++        target_link_libraries(MNNCPU PRIVATE MNNX8664 MNNAVX MNNAVXFMA MNNSSE)
 +    endif()
  endif()
  
  # AArch32/64 Assemblies
 -include(${CMAKE_CURRENT_LIST_DIR}/arm/CMakeLists.txt)
-+add_subdirectory(arm)
- 
+-
 -IF(NOT DEFINED IOS_ARCH)
-+if(NOT DEFINED IOS_ARCH)
-     set(IOS_ARCH "")
+-    set(IOS_ARCH "")
 -ENDIF()
++add_subdirectory(arm)
++if(TARGET MNNARM32)
++    target_link_libraries(MNNCPU PRIVATE MNNARM32)
++endif()
++if(TARGET MNNARM64)
++    target_link_libraries(MNNCPU PRIVATE MNNARM64)
 +endif()
  
  # ARM82 Assemblies
@@ -1229,7 +1263,7 @@ index c82ddc5d..af7967b4 100644
 +    RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
 diff --git a/source/backend/cpu/arm/CMakeLists.txt b/source/backend/cpu/arm/CMakeLists.txt
-index 46267131..685ba68d 100644
+index 46267131..ae5f997f 100644
 --- a/source/backend/cpu/arm/CMakeLists.txt
 +++ b/source/backend/cpu/arm/CMakeLists.txt
 @@ -1,12 +1,12 @@
@@ -1252,7 +1286,7 @@ index 46267131..685ba68d 100644
  else()
      LIST(FILTER MNN_AArch32_SRC EXCLUDE REGEX ".*BF16.*")
      LIST(FILTER MNN_AArch64_SRC EXCLUDE REGEX ".*BF16.*")
-@@ -14,29 +14,37 @@ endif()
+@@ -14,29 +14,39 @@ endif()
  
  # remove the armv82 extension assemblies file
  if(NOT MNN_ARM82)
@@ -1267,15 +1301,16 @@ index 46267131..685ba68d 100644
 -    list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNNARM32>)
 -    list(APPEND MNN_TARGETS MNNARM32)
 -    add_definitions(-DMNN_USE_NEON)
-+    add_library(MNNARM32 ${MNN_AArch32_SRC} ${MNN_NEON_SRC})
++    add_library(MNNARM32 STATIC ${MNN_AArch32_SRC} ${MNN_NEON_SRC})
 +    target_include_directories(MNNARM32 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/)
 +    target_compile_definitions(MNNARM32 PUBLIC MNN_USE_NEON)
-+
++    target_link_libraries(MNNARM32 PRIVATE MNNCore)
 +    if(MNN_SUPPORT_BF16)
 +        target_link_libraries(MNNARM32 PUBLIC MNN_BF16)
 +    endif()
 +
-+    install(TARGETS MNNARM32 
++    install(TARGETS MNNARM32
++        EXPORT MNNConfig
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +    )
  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64" OR ARCHS STREQUAL "arm64")
@@ -1285,10 +1320,12 @@ index 46267131..685ba68d 100644
 -    list(APPEND MNN_OBJECTS_TO_LINK $<TARGET_OBJECTS:MNNARM64>)
 -    list(APPEND MNN_TARGETS MNNARM64)
 -    add_definitions(-DMNN_USE_NEON)
-+    add_library(MNNARM64 ${MNN_AArch64_SRC} ${MNN_NEON_SRC})
+-
++    add_library(MNNARM64 STATIC ${MNN_AArch64_SRC} ${MNN_NEON_SRC})
 +    target_include_directories(MNNARM64 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/)
 +    target_compile_definitions(MNNARM64 PUBLIC MNN_USE_NEON)
- 
++    target_link_libraries(MNNARM64 PRIVATE MNNCore)
++    
      if(MNN_ARM82)
          message(STATUS "Enable INT8 SDOT")
 -        target_compile_options(MNNARM64 PRIVATE -march=armv8.2-a+dotprod -DENABLE_ARMV82)
@@ -1339,7 +1376,7 @@ index 4fa9f7a5..2b156cda 100644
 +    RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
 diff --git a/source/backend/cpu/x86_x64/CMakeLists.txt b/source/backend/cpu/x86_x64/CMakeLists.txt
-index 1b51143b..17ed4d67 100644
+index 1b51143b..287df4f7 100644
 --- a/source/backend/cpu/x86_x64/CMakeLists.txt
 +++ b/source/backend/cpu/x86_x64/CMakeLists.txt
 @@ -1,27 +1,44 @@
@@ -1370,7 +1407,7 @@ index 1b51143b..17ed4d67 100644
 +        FILE(GLOB MNN_AVXFMA_SRC ${CMAKE_CURRENT_SOURCE_DIR}/avxfma/*)
 +        if(MNN_AVX512)
 +            FILE(GLOB MNN_AVX512_SRC ${CMAKE_CURRENT_SOURCE_DIR}/avx512/*)
-+            add_library(MNNAVX512 ${MNN_AVX512_SRC})
++            add_library(MNNAVX512 STATIC ${MNN_AVX512_SRC})
 +            target_compile_options(MNNAVX512 PRIVATE -m64 -mavx512f -mavx512dq -mavx512vl -mavx512bw -mfma -mavx512vnni)
 +            target_compile_definitions(MNNAVX512 PRIVATE MNN_X86_USE_ASM)
 +            target_link_libraries(MNNAVX512 PUBLIC MNNCore)
@@ -1386,19 +1423,19 @@ index 1b51143b..17ed4d67 100644
 -    add_library(MNNAVXFMA OBJECT ${MNN_AVXFMA_SRC})
 -    add_library(MNNSSE OBJECT ${MNN_SSE_SRC})
 +    FILE(GLOB MNN_SSE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sse/*)
-+    add_library(MNNX8664 ${MNN_X8664_SRC})
++    add_library(MNNX8664 STATIC ${MNN_X8664_SRC})
 +    target_link_libraries(MNNX8664 PRIVATE MNNCore)
 +    target_compile_definitions(MNNX8664 PUBLIC MNN_USE_SSE)
 +
-+    add_library(MNNAVX ${MNN_AVX_SRC})
++    add_library(MNNAVX STATIC ${MNN_AVX_SRC})
 +    target_link_libraries(MNNAVX PRIVATE MNNCore)
 +    target_compile_definitions(MNNAVX PUBLIC MNN_USE_SSE)
 +    
-+    add_library(MNNAVXFMA ${MNN_AVXFMA_SRC})
++    add_library(MNNAVXFMA STATIC ${MNN_AVXFMA_SRC})
 +    target_link_libraries(MNNAVXFMA PRIVATE MNNCore)
 +    target_compile_definitions(MNNAVXFMA PUBLIC MNN_USE_SSE)
 +
-+    add_library(MNNSSE ${MNN_SSE_SRC})
++    add_library(MNNSSE STATIC ${MNN_SSE_SRC})
 +    target_link_libraries(MNNSSE PRIVATE MNNCore)
 +    target_compile_definitions(MNNSSE PUBLIC MNN_USE_SSE)
 +
@@ -1554,10 +1591,10 @@ index 527faa23..c2a26a68 100644
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
 diff --git a/source/backend/metal/CMakeLists.txt b/source/backend/metal/CMakeLists.txt
-index b5e5c9c5..752e026a 100644
+index b5e5c9c5..a9f0f84f 100644
 --- a/source/backend/metal/CMakeLists.txt
 +++ b/source/backend/metal/CMakeLists.txt
-@@ -1,27 +1,54 @@
+@@ -1,27 +1,53 @@
 -FILE(GLOB MNN_Metal_SRC ${CMAKE_CURRENT_LIST_DIR}/*.mm ${CMAKE_CURRENT_LIST_DIR}/*.hpp ${CMAKE_CURRENT_LIST_DIR}/*.h)
 -FILE(GLOB MNN_Metal_KERNELS_SRC ${CMAKE_CURRENT_LIST_DIR}/*.metal)
 +FILE(GLOB MNN_Metal_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.mm ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
@@ -1622,72 +1659,12 @@ index b5e5c9c5..752e026a 100644
 +    MACOSX_PACKAGE_LOCATION Resources
 +)
 +install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mnn.metallib
-+        DESTINATION bin
++        DESTINATION lib
 +)
-+
 +install(TARGETS MNNMetal
 +        EXPORT MNNConfig
-+        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
++        RUNTIME LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
-diff --git a/source/backend/metal/MetalOPRegister.mm b/source/backend/metal/MetalOPRegister.mm
-deleted file mode 100644
-index 7b1c6ba2..00000000
---- a/source/backend/metal/MetalOPRegister.mm
-+++ /dev/null
-@@ -1,52 +0,0 @@
--// This file is generated by Shell for ops register
--#import "backend/metal/MetalDefine.h"
--   namespace MNN {
--#if MNN_METAL_ENABLED
--  extern void ___MetalCastCreator__OpType_Cast__();
--  extern void ___MetalReductionCreator__OpType_Reduction__();
--  extern void ___MetalEltwiseCreator__OpType_Eltwise__();
--  extern void ___MetalConvolutionCreator__OpType_Convolution__();
--  extern void ___MetalMatMulCreator__OpType_MatMul__();
--  extern void ___MetalBinaryCreator__OpType_BinaryOp__();
--  extern void ___MetalConvolutionDepthwiseCreator__OpType_ConvolutionDepthwise__();
--  extern void ___MetalDeconvolutionCreator__OpType_Deconvolution__();
--  extern void ___MetalDeconvolutionCreator__OpType_DeconvolutionDepthwise__();
--  extern void ___MetalReLUCreator__OpType_ReLU__();
--  extern void ___MetalPoolingCreator__OpType_Pooling__();
--  extern void ___MetalScaleCreator__OpType_Scale__();
--  extern void ___MetalInterpCreator__OpType_Interp__();
--  extern void ___MetalGridSampleCreator__OpType_GridSample__();
--  extern void ___MetalUnaryCreator__OpType_UnaryOp__();
--  extern void ___MetalUnaryCreator__OpType_TanH__();
--  extern void ___MetalUnaryCreator__OpType_Sigmoid__();
--  extern void ___MetalRasterCreator__OpType_Raster__();
--  extern void ___MetalROIPoolingCreator__OpType_ROIPooling__();
--  extern void ___MetalTensorConverterCreator__OpType_ConvertTensor__();
--  extern void ___MetalPReLUCreator__OpType_PReLU__();
--  extern void ___MetalReLU6Creator__OpType_ReLU6__();
--void registerMetalOps() {
--   ___MetalCastCreator__OpType_Cast__();
--   ___MetalReductionCreator__OpType_Reduction__();
--   ___MetalEltwiseCreator__OpType_Eltwise__();
--   ___MetalConvolutionCreator__OpType_Convolution__();
--   ___MetalMatMulCreator__OpType_MatMul__();
--   ___MetalBinaryCreator__OpType_BinaryOp__();
--   ___MetalConvolutionDepthwiseCreator__OpType_ConvolutionDepthwise__();
--   ___MetalDeconvolutionCreator__OpType_Deconvolution__();
--   ___MetalDeconvolutionCreator__OpType_DeconvolutionDepthwise__();
--   ___MetalReLUCreator__OpType_ReLU__();
--   ___MetalPoolingCreator__OpType_Pooling__();
--   ___MetalScaleCreator__OpType_Scale__();
--   ___MetalInterpCreator__OpType_Interp__();
--   ___MetalGridSampleCreator__OpType_GridSample__();
--   ___MetalUnaryCreator__OpType_UnaryOp__();
--   ___MetalUnaryCreator__OpType_TanH__();
--   ___MetalUnaryCreator__OpType_Sigmoid__();
--   ___MetalRasterCreator__OpType_Raster__();
--   ___MetalROIPoolingCreator__OpType_ROIPooling__();
--   ___MetalTensorConverterCreator__OpType_ConvertTensor__();
--   ___MetalPReLUCreator__OpType_PReLU__();
--   ___MetalReLU6Creator__OpType_ReLU6__();
--}
--#endif
--}
-\ No newline at end of file
 diff --git a/source/backend/opencl/CMakeLists.txt b/source/backend/opencl/CMakeLists.txt
 index b13c56d9..f7cfc194 100644
 --- a/source/backend/opencl/CMakeLists.txt
@@ -1781,22 +1758,37 @@ index b13c56d9..f7cfc194 100644
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
  )
 diff --git a/source/backend/opengl/CMakeLists.txt b/source/backend/opengl/CMakeLists.txt
-index 32d80437..3648c8a9 100644
+index 32d80437..99ba7313 100644
 --- a/source/backend/opengl/CMakeLists.txt
 +++ b/source/backend/opengl/CMakeLists.txt
-@@ -1,24 +1,26 @@
+@@ -1,24 +1,41 @@
 -FILE(GLOB MNN_OpenGL_SRC ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
 +FILE(GLOB MNN_OpenGL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
  option(MNN_OPENGL_REGEN "Regenerate OpenGL Shaders." OFF)
 -IF(MNN_SEP_BUILD)
 -    if (MNN_BUILD_FOR_ANDROID_COMMAND)
 -        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "../../../")
--    endif()
--    add_library(MNN_GL SHARED ${MNN_OpenGL_SRC} "${CMAKE_CURRENT_LIST_DIR}/AllShader.cpp")
 +
 +if(MNN_SEP_BUILD)
 +    add_library(MNN_GL SHARED ${MNN_OpenGL_SRC} "${CMAKE_CURRENT_SOURCE_DIR}/AllShader.cpp")
-     target_link_libraries(MNN_GL MNN GLESv3 EGL)
++else()
++    add_library(MNN_GL ${MNN_OpenGL_SRC} "${CMAKE_CURRENT_SOURCE_DIR}/AllShader.cpp")
++endif()
++target_include_directories(MNN_GL PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/)
++
++target_link_libraries(MNN_GL PRIVATE MNNCore)
++if(ANDROID)
++    target_link_libraries(MNN_GL PUBLIC GLESv3 EGL)
++endif()
++if(MNN_ARM82)
++    target_link_libraries(MNN_GL PUBLIC MNN_Arm82)
++    if(TARGET MNNARM32) # for MNNPack
++        target_link_libraries(MNN_GL PRIVATE MNNARM32)
++    elseif(TARGET MNNARM64)
++        target_link_libraries(MNN_GL PRIVATE MNNARM64)
+     endif()
+-    add_library(MNN_GL SHARED ${MNN_OpenGL_SRC} "${CMAKE_CURRENT_LIST_DIR}/AllShader.cpp")
+-    target_link_libraries(MNN_GL MNN GLESv3 EGL)
 -ELSE()
 -    add_library(MNN_GL OBJECT ${MNN_OpenGL_SRC} "${CMAKE_CURRENT_LIST_DIR}/AllShader.cpp")
 -ENDIF()
@@ -1804,9 +1796,9 @@ index 32d80437..3648c8a9 100644
 -IF(MNN_OPENGL_REGEN)
 -  add_custom_command(OUTPUT "${CMAKE_CURRENT_LIST_DIR}/AllShader.cpp"
 +else()
-+    add_library(MNN_GL ${MNN_OpenGL_SRC} "${CMAKE_CURRENT_SOURCE_DIR}/AllShader.cpp")
++    target_link_libraries(MNN_GL PRIVATE MNNCPU)
 +endif()
-+target_include_directories(MNN_GL PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/)
++
 +if(MNN_OPENGL_REGEN)
 +  add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/AllShader.cpp"
      COMMAND ${PYTHON_EXECUTABLE}
@@ -1828,7 +1820,6 @@ index 32d80437..3648c8a9 100644
 +        EXPORT MNNConfig
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
-\ No newline at end of file
 diff --git a/source/backend/tensorrt/CMakeLists.txt b/source/backend/tensorrt/CMakeLists.txt
 index aadabd6c..44669613 100644
 --- a/source/backend/tensorrt/CMakeLists.txt
@@ -1900,24 +1891,33 @@ index aadabd6c..44669613 100644
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
 diff --git a/source/backend/vulkan/CMakeLists.txt b/source/backend/vulkan/CMakeLists.txt
-index dd17b9da..057d637c 100644
+index dd17b9da..1e59a8d7 100644
 --- a/source/backend/vulkan/CMakeLists.txt
 +++ b/source/backend/vulkan/CMakeLists.txt
-@@ -1,38 +1,42 @@
+@@ -1,38 +1,45 @@
 -FILE(GLOB_RECURSE MNN_Vulkan_SRC ${CMAKE_CURRENT_LIST_DIR}/*)
 +FILE(GLOB_RECURSE MNN_Vulkan_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*)
  
 -include_directories("./")
- if(MNN_USE_SYSTEM_LIB)
-     find_package(Vulkan REQUIRED)
+-if(MNN_USE_SYSTEM_LIB)
+-    find_package(Vulkan REQUIRED)
 -    set(MNN_VULKAN_LIBS ${Vulkan_LIBRARIES} PARENT_SCOPE)
 -else()
 -    add_definitions(-DMNN_USE_LIB_WRAPPER)
- endif()
+-endif()
 -IF(MNN_SEP_BUILD)
 -    if (MNN_BUILD_FOR_ANDROID_COMMAND)
 -        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "../../../")
--    endif()
++find_package(Vulkan REQUIRED)
++if(MNN_SEP_BUILD)
++    add_library(MNN_Vulkan ${MNN_Vulkan_SRC})
++    target_link_libraries(MNN_Vulkan PRIVATE MNN)
++    if(MNN_USE_SYSTEM_LIB)
++        target_link_libraries(MNN_Vulkan PUBLIC Vulkan::Vulkan)
++    elseif(NOT WIN32)
++        target_link_libraries(MNN_Vulkan ${CMAKE_DL_LIBS})
++        target_compile_definitions(MNN_Vulkan PRIVATE MNN_USE_LIB_WRAPPER)
+     endif()
 -    add_library(
 -        MNN_Vulkan
 -        SHARED
@@ -1925,15 +1925,13 @@ index dd17b9da..057d637c 100644
 -        )
 -    target_link_libraries(MNN_Vulkan MNN)
 -    if (MNN_USE_SYSTEM_LIB)
-+if(MNN_SEP_BUILD)
-+    add_library(MNN_Vulkan SHARED ${MNN_Vulkan_SRC})
-+    target_link_libraries(MNN_Vulkan PUBLIC ${Vulkan_LIBRARIES} PRIVATE MNN)
-+    if(MNN_USE_SYSTEM_LIB)
-         target_link_libraries(MNN_Vulkan ${Vulkan_LIBRARY})
+-        target_link_libraries(MNN_Vulkan ${Vulkan_LIBRARY})
 -    else()
 -        target_link_libraries(MNN_Vulkan dl)
-+    elseif(NOT WIN32)
-+        target_link_libraries(MNN_Vulkan ${CMAKE_DL_LIBS})
++else()
++    add_library(MNN_Vulkan ${MNN_Vulkan_SRC})
++    target_link_libraries(MNN_Vulkan PUBLIC Vulkan::Vulkan)
++    if(NOT WIN32 AND NOT MNN_USE_SYSTEM_LIB)
 +        target_compile_definitions(MNN_Vulkan PRIVATE MNN_USE_LIB_WRAPPER)
      endif()
 -ELSE()
@@ -1943,11 +1941,6 @@ index dd17b9da..057d637c 100644
 -        ${MNN_Vulkan_SRC}
 -        )
 -ENDIF()
-+else()
-+    add_library(MNN_Vulkan ${MNN_Vulkan_SRC})
-+    if(NOT WIN32 AND NOT MNN_USE_SYSTEM_LIB)
-+        target_compile_definitions(MNN_Vulkan PRIVATE MNN_USE_LIB_WRAPPER)
-+    endif()
 +endif()
  
 -include_directories("${CMAKE_CURRENT_LIST_DIR}/include/" "${CMAKE_CURRENT_LIST_DIR}/component/" "${CMAKE_CURRENT_LIST_DIR}/runtime")
@@ -1970,6 +1963,10 @@ index dd17b9da..057d637c 100644
 -  add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR)
 +if(CMAKE_SYSTEM_NAME MATCHES "^Android")
 +  target_compile_definitions(MNN_Vulkan PUBLIC VK_USE_PLATFORM_ANDROID_KHR)
++  target_link_libraries(MNN_Vulkan
++  PUBLIC
++    ${Vulkan_LIBRARY}
++  )
  endif()
 +install(TARGETS MNN_Vulkan
 +        EXPORT MNNConfig
