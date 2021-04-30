@@ -1,0 +1,416 @@
+diff --git a/source/backend/opengl/GLBinary.cpp b/source/backend/opengl/GLBinary.cpp
+index 048ca7ae..1c51a445 100644
+--- a/source/backend/opengl/GLBinary.cpp
++++ b/source/backend/opengl/GLBinary.cpp
+@@ -41,7 +41,7 @@ ErrorCode GLBinary::onResize(const std::vector<Tensor *> &inputs, const std::vec
+     }else{
+         MNN_PRINT("Not Supported Binary Operation: %d\n", mType);
+     }
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLBinary::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -92,7 +92,7 @@ ErrorCode GLBinary::onExecute(const std::vector<Tensor *> &inputs, const std::ve
+     OPENGL_CHECK_ERROR;
+     ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]), UP_DIV(ic_4, mLocalSize[2]));
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ class BinaryCreator : public GLBackend::Creator {
+diff --git a/source/backend/opengl/GLConcat.cpp b/source/backend/opengl/GLConcat.cpp
+index f108b93e..53e63674 100644
+--- a/source/backend/opengl/GLConcat.cpp
++++ b/source/backend/opengl/GLConcat.cpp
+@@ -63,7 +63,7 @@ ErrorCode GLConcat::onExecute(const std::vector<Tensor *> &inputs, const std::ve
+         }
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ class ConcatCreator : public GLBackend::Creator {
+diff --git a/source/backend/opengl/GLConverter.cpp b/source/backend/opengl/GLConverter.cpp
+index 9f831d8f..3b73c8f8 100644
+--- a/source/backend/opengl/GLConverter.cpp
++++ b/source/backend/opengl/GLConverter.cpp
+@@ -25,7 +25,7 @@ ErrorCode GLConverter::onResize(const std::vector<Tensor *> &inputs, const std::
+     std::vector<std::string> prefix;
+     setLocalSize(prefix, mLocalSize, 8, 8, 1);
+     mProgram = ((GLBackend *)backend())->getProgram("convert", glsl_converter_glsl, prefix);
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLConverter::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -56,7 +56,7 @@ ErrorCode GLConverter::onExecute(const std::vector<Tensor *> &inputs, const std:
+ 
+     ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]),
+                       UP_DIV(ic_4, mLocalSize[2]));
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ 
+diff --git a/source/backend/opengl/GLConvolution.cpp b/source/backend/opengl/GLConvolution.cpp
+index 31d40dba..ddc0340b 100644
+--- a/source/backend/opengl/GLConvolution.cpp
++++ b/source/backend/opengl/GLConvolution.cpp
+@@ -43,12 +43,12 @@ ErrorCode GPUConvolution::onResize(const std::vector<Tensor *> &inputs, const st
+ 
+         mPadX = (pad_needed_width > 0 ?  pad_needed_width : 0) / 2;
+         mPadY = (pad_needed_height > 0 ?  pad_needed_height : 0) / 2;
+-        return NO_ERROR;
++        return ErrorCode{};
+     }
+     mPadX = mCommon->padX();
+     mPadY = mCommon->padY();
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ GLConvolution::~GLConvolution() {
+@@ -154,7 +154,7 @@ ErrorCode GLConvolution::onResize(const std::vector<Tensor *> &inputs, const std
+         mProgram = extra->getProgram("convolution", glsl_convolution_glsl, prefix);
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ 
+@@ -207,7 +207,7 @@ ErrorCode GLConvolution::onExecute(const std::vector<Tensor *> &inputs, const st
+         OPENGL_CHECK_ERROR;
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ 
+diff --git a/source/backend/opengl/GLConvolutionDepthwise.cpp b/source/backend/opengl/GLConvolutionDepthwise.cpp
+index 4c31e045..7d09495d 100644
+--- a/source/backend/opengl/GLConvolutionDepthwise.cpp
++++ b/source/backend/opengl/GLConvolutionDepthwise.cpp
+@@ -105,7 +105,7 @@ ErrorCode GLConvolutionDepthwise::onResize(const std::vector<Tensor *> &inputs,
+         glUniform2i(6, sx, sy);
+         glUniform2i(7, dx, dy);
+     };
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLConvolutionDepthwise::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -154,7 +154,7 @@ ErrorCode GLConvolutionDepthwise::onExecute(const std::vector<Tensor *> &inputs,
+ 
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ GLCreatorRegister<TypedCreator<GLConvolutionDepthwise>> __depthwise_conv_op(OpType_ConvolutionDepthwise);
+ } // namespace OpenGL
+diff --git a/source/backend/opengl/GLConvolutionIm2col.cpp b/source/backend/opengl/GLConvolutionIm2col.cpp
+index 486de1f2..be7c2277 100644
+--- a/source/backend/opengl/GLConvolutionIm2col.cpp
++++ b/source/backend/opengl/GLConvolutionIm2col.cpp
+@@ -156,7 +156,7 @@ ErrorCode GLConvolutionIm2col::onResize(const std::vector<Tensor *> &inputs, con
+         };
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+ 
+@@ -242,7 +242,7 @@ ErrorCode GLConvolutionIm2col::onExecute(const std::vector<Tensor *> &inputs, co
+         OPENGL_CHECK_ERROR;
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ } // namespace OpenGL
+diff --git a/source/backend/opengl/GLEltwise.cpp b/source/backend/opengl/GLEltwise.cpp
+index b2d487bf..d3cd2762 100644
+--- a/source/backend/opengl/GLEltwise.cpp
++++ b/source/backend/opengl/GLEltwise.cpp
+@@ -77,7 +77,7 @@ ErrorCode GLEltwise::onExecute(const std::vector<Tensor *> &inputs, const std::v
+     ((GLBackend *)backend())->compute(UP_DIV(outputTensor->width(), 2), UP_DIV(outputTensor->height(), 2), UP_DIV(depthQuad, 16));
+     OPENGL_CHECK_ERROR;
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ GLCreatorRegister<TypedCreator<GLEltwise>> __eltwise_op(OpType_Eltwise);
+ } // namespace OpenGL
+diff --git a/source/backend/opengl/GLHead.hpp b/source/backend/opengl/GLHead.hpp
+index 96be807f..e3b08db8 100644
+--- a/source/backend/opengl/GLHead.hpp
++++ b/source/backend/opengl/GLHead.hpp
+@@ -17,7 +17,7 @@
+ #define CONTEXT_FREE_API
+ #include <assert.h>
+ #include <stdlib.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) || defined(_WIN32)
+ #include <GLES2/gl2.h>
+ #include <GLES2/gl2ext.h>
+ #include <GLES3/gl31.h>
+diff --git a/source/backend/opengl/GLInterp.cpp b/source/backend/opengl/GLInterp.cpp
+index d1df1c37..fc47fc97 100644
+--- a/source/backend/opengl/GLInterp.cpp
++++ b/source/backend/opengl/GLInterp.cpp
+@@ -29,7 +29,7 @@ ErrorCode GLInterp::onResize(const std::vector<Tensor *> &inputs, const std::vec
+     }else{
+         return NOT_SUPPORT;
+     }
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ GLInterp::~GLInterp() {
+@@ -74,7 +74,7 @@ ErrorCode GLInterp::onExecute(const std::vector<Tensor *> &inputs, const std::ve
+     OPENGL_CHECK_ERROR;
+     ((GLBackend *)backend())->compute(UP_DIV(ow, mLocalSize[0]), UP_DIV(oh, mLocalSize[1]), UP_DIV(oc_4*ob, mLocalSize[2]));
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ GLCreatorRegister<TypedCreator<GLInterp>> __interp_op(OpType_Interp);
+ } // namespace OpenGL
+diff --git a/source/backend/opengl/GLLock.cpp b/source/backend/opengl/GLLock.cpp
+index 957c869b..4d78205f 100644
+--- a/source/backend/opengl/GLLock.cpp
++++ b/source/backend/opengl/GLLock.cpp
+@@ -8,9 +8,11 @@
+ 
+ #include "backend/opengl/GLLock.hpp"
+ #include <assert.h>
++#if defined(__ANDROID__)
+ #include <pthread.h>
+ namespace MNN {
+ namespace OpenGL {
++
+ GLLock::GLLock() {
+     pthread_mutex_t* m = new pthread_mutex_t;
+     pthread_mutex_init(m, NULL);
+@@ -35,3 +37,37 @@ void GLLock::unlock() {
+ }
+ } // namespace OpenGL
+ } // namespace MNN
++
++#elif defined(_WIN32)
++#include <Windows.h>
++
++namespace MNN {
++namespace OpenGL {
++
++GLLock::GLLock() {
++    CRITICAL_SECTION* m = new CRITICAL_SECTION;
++    InitializeCriticalSectionEx(m, 0x0400, 0);
++    mData = m;
++}
++
++GLLock::~GLLock() {
++    assert(NULL != mData);
++    CRITICAL_SECTION* m = reinterpret_cast<CRITICAL_SECTION*>(mData);
++    DeleteCriticalSection(m);
++    delete m;
++}
++
++void GLLock::lock() {
++    assert(NULL != mData);
++    CRITICAL_SECTION* m = reinterpret_cast<CRITICAL_SECTION*>(mData);
++    EnterCriticalSection(m);
++}
++
++void GLLock::unlock() {
++    assert(NULL != mData);
++    CRITICAL_SECTION* m = reinterpret_cast<CRITICAL_SECTION*>(mData);
++    LeaveCriticalSection(m);
++}
++} // namespace OpenGL
++} // namespace MNN
++#endif
+diff --git a/source/backend/opengl/GLPermute.cpp b/source/backend/opengl/GLPermute.cpp
+index ab0f08cd..69a797e9 100644
+--- a/source/backend/opengl/GLPermute.cpp
++++ b/source/backend/opengl/GLPermute.cpp
+@@ -39,7 +39,7 @@ ErrorCode GLPermute::onResize(const std::vector<Tensor *> &inputs, const std::ve
+     mSrcProgram = ((GLBackend *)backend())->getProgram("src", glsl_image_to_nchw_buffer_glsl, prefix);
+     mDstProgram = ((GLBackend *)backend())->getProgram("dst", glsl_nchw_buffer_to_image_glsl, prefix);
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLPermute::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -94,7 +94,7 @@ ErrorCode GLPermute::onExecute(const std::vector<Tensor *> &inputs, const std::v
+         OPENGL_CHECK_ERROR;
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ GLCreatorRegister<TypedCreator<GLPermute>> __permute_op(OpType_Permute);
+ } // namespace OpenGL
+diff --git a/source/backend/opengl/GLPool.cpp b/source/backend/opengl/GLPool.cpp
+index 6f0978de..fad14a78 100644
+--- a/source/backend/opengl/GLPool.cpp
++++ b/source/backend/opengl/GLPool.cpp
+@@ -34,7 +34,7 @@ ErrorCode GLPool::onResize(const std::vector<Tensor *> &inputs, const std::vecto
+             glUniform2i(4, 0, 0);
+         };
+     }
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLPool::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -59,7 +59,7 @@ ErrorCode GLPool::onExecute(const std::vector<Tensor *> &inputs, const std::vect
+ 
+     OPENGL_CHECK_ERROR;
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ GLPool::~GLPool() {
+diff --git a/source/backend/opengl/GLROIPooling.cpp b/source/backend/opengl/GLROIPooling.cpp
+index 4cbb8614..e17a0df8 100644
+--- a/source/backend/opengl/GLROIPooling.cpp
++++ b/source/backend/opengl/GLROIPooling.cpp
+@@ -26,7 +26,7 @@ GLRoiPooling::~GLRoiPooling() {
+ 
+ ErrorCode GLRoiPooling::onResize(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLRoiPooling::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -66,7 +66,7 @@ ErrorCode GLRoiPooling::onExecute(const std::vector<Tensor *> &inputs, const std
+ 
+     OPENGL_CHECK_ERROR;
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ GLCreatorRegister<TypedCreator<GLRoiPooling>> __roipooling_op(OpType_ROIPooling);
+diff --git a/source/backend/opengl/GLRelu.cpp b/source/backend/opengl/GLRelu.cpp
+index d0e5e4c0..b2b7a6ee 100644
+--- a/source/backend/opengl/GLRelu.cpp
++++ b/source/backend/opengl/GLRelu.cpp
+@@ -51,7 +51,7 @@ ErrorCode GLRelu::onResize(const std::vector<Tensor *> &inputs, const std::vecto
+         MNN_PRINT("not support !!!");
+         return NOT_SUPPORT;
+     }
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLRelu::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -92,7 +92,7 @@ ErrorCode GLRelu::onExecute(const std::vector<Tensor *> &inputs, const std::vect
+         ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]), UP_DIV(ic_4, mLocalSize[2]));
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ GLCreatorRegister<TypedCreator<GLRelu>> __relu_op(OpType_ReLU);
+ GLCreatorRegister<TypedCreator<GLRelu>> __prelu_op(OpType_PReLU);
+diff --git a/source/backend/opengl/GLReshape.cpp b/source/backend/opengl/GLReshape.cpp
+index 82e28415..e4fe333e 100644
+--- a/source/backend/opengl/GLReshape.cpp
++++ b/source/backend/opengl/GLReshape.cpp
+@@ -37,7 +37,7 @@ ErrorCode GLReshape::onResize(const std::vector<Tensor *> &inputs, const std::ve
+         mDstProgram = ((GLBackend *)backend())->getProgram("dst", glsl_nhwc_buffer_to_image_glsl, prefix);
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLReshape::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -110,7 +110,7 @@ ErrorCode GLReshape::onExecute(const std::vector<Tensor *> &inputs, const std::v
+         }
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ class ReshapeCreator : public GLBackend::Creator {
+diff --git a/source/backend/opengl/GLSoftmax.cpp b/source/backend/opengl/GLSoftmax.cpp
+index 9be6dac7..06bd3301 100644
+--- a/source/backend/opengl/GLSoftmax.cpp
++++ b/source/backend/opengl/GLSoftmax.cpp
+@@ -42,7 +42,7 @@ ErrorCode GLSoftmax::onResize(const std::vector<Tensor *> &inputs, const std::ve
+     } else {
+         MNN_ASSERT(false);
+     }
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLSoftmax::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -89,7 +89,7 @@ ErrorCode GLSoftmax::onExecute(const std::vector<Tensor *> &inputs, const std::v
+         MNN_ASSERT(false);
+     }
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ class SoftmaxCreator : public GLBackend::Creator {
+diff --git a/source/backend/opengl/GLSqueeze.cpp b/source/backend/opengl/GLSqueeze.cpp
+index 76602686..4cbac424 100644
+--- a/source/backend/opengl/GLSqueeze.cpp
++++ b/source/backend/opengl/GLSqueeze.cpp
+@@ -30,7 +30,7 @@ ErrorCode GLSqueeze::onResize(const std::vector<Tensor *> &inputs, const std::ve
+     setLocalSize(prefix, mLocalSize, 8, 8, 1);
+     mProgram = ((GLBackend *)backend())->getProgram("suqeeze", glsl_image_copy_glsl, prefix);
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLSqueeze::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -58,7 +58,7 @@ ErrorCode GLSqueeze::onExecute(const std::vector<Tensor *> &inputs, const std::v
+     OPENGL_CHECK_ERROR;
+     ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]), UP_DIV(ic_4, mLocalSize[2]));
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ class SqueezeCreator : public GLBackend::Creator {
+ public:
+diff --git a/source/backend/opengl/GLUnary.cpp b/source/backend/opengl/GLUnary.cpp
+index f8f1a0a3..a9b1c27b 100644
+--- a/source/backend/opengl/GLUnary.cpp
++++ b/source/backend/opengl/GLUnary.cpp
+@@ -33,7 +33,7 @@ ErrorCode GLUnary::onResize(const std::vector<Tensor *> &inputs, const std::vect
+     }else{
+         MNN_PRINT("Not Supported Unary Operation: %d\n", mType);
+     }
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ ErrorCode GLUnary::onExecute(const std::vector<Tensor *> &inputs, const std::vector<Tensor *> &outputs) {
+@@ -63,7 +63,7 @@ ErrorCode GLUnary::onExecute(const std::vector<Tensor *> &inputs, const std::vec
+     OPENGL_CHECK_ERROR;
+     ((GLBackend *)backend())->compute(UP_DIV(iw, mLocalSize[0]), UP_DIV(ih, mLocalSize[1]), UP_DIV(ic_4, mLocalSize[2]));
+ 
+-    return NO_ERROR;
++    return ErrorCode{};
+ }
+ 
+ class UnaryCreator : public GLBackend::Creator {

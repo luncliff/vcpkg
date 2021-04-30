@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 177e1956..d449b950 100644
+index 177e1956..11318185 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,4 +1,4 @@
@@ -326,9 +326,7 @@ index 177e1956..d449b950 100644
 -                  )
  
 +add_library(MNN INTERFACE)
- 
--set(MNN_OBJECTS_TO_LINK "")
--set(MNN_TARGETS "")
++
 +if(MNN_BUILD_SHARED_LIBS)
 +  if(WIN32)
 +    add_compile_definitions(BUILDING_MNN_DLL USING_MNN_DLL)
@@ -339,9 +337,11 @@ index 177e1956..d449b950 100644
 +  endif()
 +endif()
  
--# Core
+-set(MNN_OBJECTS_TO_LINK "")
+-set(MNN_TARGETS "")
 +find_package(Flatbuffers CONFIG REQUIRED)
-+
+ 
+-# Core
 +# Core, CV, Math, Transform, Utils
  FILE(GLOB MNN_Core_SRC ${CMAKE_CURRENT_LIST_DIR}/source/core/*)
 -add_library(MNNCore OBJECT ${MNN_Core_SRC})
@@ -735,12 +735,13 @@ index 177e1956..d449b950 100644
 -ENDIF()
 -if (MSVC)
 -  target_link_options(MNN PRIVATE "/IGNORE:4049,4217")
+-endif()
+-if (MNN_ONEDNN)
+-    add_dependencies(MNN ONEDNN_COMMON ONEDNN_CPU ONEDNN_CPU_X64)
 +if(MNN_TENSORRT)
 +  add_subdirectory(source/backend/tensorrt) # MNN_TRT
 +  target_link_libraries(MNN INTERFACE MNN_TRT)
- endif()
--if (MNN_ONEDNN)
--    add_dependencies(MNN ONEDNN_COMMON ONEDNN_CPU ONEDNN_CPU_X64)
++endif()
 +
 +target_sources(MNN PRIVATE ${MNN_PUB_HDRS} ${MNN_EXPR_PUB_HDRS})
 +
@@ -750,7 +751,7 @@ index 177e1956..d449b950 100644
 +)
 +
 +if(MSVC)
-+  target_link_options(MNN PRIVATE "/IGNORE:4049,4217")
++  add_link_options("/IGNORE:4049,4217")
  endif()
  
  if(APPLE)
@@ -1758,10 +1759,10 @@ index b13c56d9..f7cfc194 100644
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
  )
 diff --git a/source/backend/opengl/CMakeLists.txt b/source/backend/opengl/CMakeLists.txt
-index 32d80437..99ba7313 100644
+index 32d80437..dbc98744 100644
 --- a/source/backend/opengl/CMakeLists.txt
 +++ b/source/backend/opengl/CMakeLists.txt
-@@ -1,24 +1,41 @@
+@@ -1,24 +1,52 @@
 -FILE(GLOB MNN_OpenGL_SRC ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
 +FILE(GLOB MNN_OpenGL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
  option(MNN_OPENGL_REGEN "Regenerate OpenGL Shaders." OFF)
@@ -1779,6 +1780,17 @@ index 32d80437..99ba7313 100644
 +target_link_libraries(MNN_GL PRIVATE MNNCore)
 +if(ANDROID)
 +    target_link_libraries(MNN_GL PUBLIC GLESv3 EGL)
++endif()
++if(WIN32)
++    target_compile_definitions(MNN_GL
++    PRIVATE
++        NOMINMAX
++    )
++    find_package(unofficial-angle CONFIG REQUIRED)
++    target_link_libraries(MNN_GL
++    PUBLIC
++        unofficial::angle::libEGL unofficial::angle::libGLESv2
++    )
 +endif()
 +if(MNN_ARM82)
 +    target_link_libraries(MNN_GL PUBLIC MNN_Arm82)
@@ -1989,3 +2001,4 @@ index a371a4ca..136c595d 100644
 +        EXPORT MNNConfig
 +        RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib
 +)
+

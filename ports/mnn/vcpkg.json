@@ -33,6 +33,10 @@
         {
           "name": "egl-registry",
           "platform": "windows"
+        },
+        {
+          "name": "angle",
+          "platform": "windows"
         }
       ]
     },
