@@ -1,0 +1,70 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c2cd3e2..6490d7f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -28,18 +28,17 @@ endif()
+ # Add codes
+ 
+ file(GLOB_RECURSE osm_src
+-    thirdparty/*.c
+-    thirdparty/*.h
+     src/Decorder/*.h
+     src/Decorder/*.cpp
+     src/Filter/*.h
+     src/Filter/*.cpp)
+-
+-file(GLOB osm_root_src
++file(GLOB osm_root_hdr
+     src/*.h
++)
++file(GLOB osm_root_src
+     src/*.cpp)
+ 
+-list(APPEND osm_src ${osm_root_src})
++list(APPEND osm_src ${osm_root_hdr} ${osm_root_src})
+ 
+ set(wasapi_src
+     src/Manager/osm.Manager_Impl_WasApi.cpp)
+@@ -96,21 +95,23 @@ foreach(FILE ${files})
+     source_group("${GROUP}" FILES "${FILE}")
+ endforeach()
+ 
++find_package(Ogg CONFIG REQUIRED)
++find_package(Vorbis CONFIG REQUIRED)
+ 
++add_library( OpenSoundMixer STATIC ${osm_src} )
+ 
+-include_directories(
+-    src/
+-    thirdparty/libogg/include/
+-    thirdparty/libvorbis/include/
+-    thirdparty/libvorbis/src/)
+-# 
++set_target_properties( OpenSoundMixer PROPERTIES
++    PUBLIC_HEADER "${osm_root_hdr}" )
+ 
+-link_directories(
+-    ${PROJECT_SOURCE_DIR}/lib/
+-    ${PROJECT_BINARY_DIR}/lib/
+-    lib/)
++target_include_directories( OpenSoundMixer PRIVATE src)
+ 
+-add_library( OpenSoundMixer STATIC ${osm_src} )
++target_link_directories( OpenSoundMixer PRIVATE
++    ${PROJECT_SOURCE_DIR}/lib
++    ${PROJECT_BINARY_DIR}/lib
++    lib)
++
++target_link_libraries(OpenSoundMixer PUBLIC
++    Ogg::ogg Vorbis::vorbis Vorbis::vorbisenc Vorbis::vorbisfile)
+ 
+ if (BUILD_TEST)
+     add_executable( OpenSoundMixerTest ${test_src} )
+@@ -169,6 +170,7 @@ endif()
+ 
+ install(
+     TARGETS OpenSoundMixer
++    PUBLIC_HEADER DESTINATION include
+     ARCHIVE DESTINATION lib
+     LIBRARY DESTINATION lib)
+ 

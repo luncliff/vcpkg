@@ -1,0 +1,40 @@
+{
+  "name": "effekseer",
+  "version-string": "160d",
+  "description": "This software is a particle effect editing tool",
+  "homepage": "https://github.com/effekseer/Effekseer",
+  "license": "MIT",
+  "dependencies": [
+    "glfw3",
+    "glslang",
+    "libgd",
+    "libpng",
+    "llgi",
+    "opensoundmixer",
+    "spdlog",
+    "stb",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "tools": {
+      "description": "Build with tools",
+      "dependencies": [
+        "imgui",
+        "spdlog"
+      ]
+    },
+    "vulkan": {
+      "description": "Build with Vulkan",
+      "dependencies": [
+        "vulkan"
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "opensoundmixer",
+  "version-date": "2021-07-14",
+  "description": "This is a sound mixer for multiplatforms",
+  "homepage": "https://github.com/altseed/OpenSoundMixer",
+  "dependencies": [
+    "libogg",
+    "libvorbis",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "llgi",
+  "version-date": "2021-07-13",
+  "homepage": "https://github.com/altseed/LLGI",
+  "license": "zlib",
+  "dependencies": [
+    "glslang",
+    "spirv-cross",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "vulkan": {
+      "description": "Build with Vulkan",
+      "dependencies": [
+        "vulkan"
+      ]
+    }
+  }
+}
