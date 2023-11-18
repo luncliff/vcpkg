@@ -1,0 +1,104 @@
+diff --git a/Dev/Cpp/EffekseerMaterialCompiler/DirectX12/EffekseerMaterialCompilerDX12.cpp b/Dev/Cpp/EffekseerMaterialCompiler/DirectX12/EffekseerMaterialCompilerDX12.cpp
+index 3689650..6560e6c 100644
+--- a/Dev/Cpp/EffekseerMaterialCompiler/DirectX12/EffekseerMaterialCompilerDX12.cpp
++++ b/Dev/Cpp/EffekseerMaterialCompiler/DirectX12/EffekseerMaterialCompilerDX12.cpp
+@@ -1,7 +1,7 @@
+ #include "EffekseerMaterialCompilerDX12.h"
+ #include <iostream>
+ 
+-#include "../3rdParty/LLGI/src/DX12/LLGI.CompilerDX12.h"
++#include <DX12/LLGI.CompilerDX12.h>
+ #include "../HLSLGenerator/ShaderGenerator.h"
+ 
+ #pragma comment(lib, "d3dcompiler.lib")
+diff --git a/Dev/Cpp/EffekseerRendererDX12/EffekseerRenderer/EffekseerRendererDX12.Renderer.cpp b/Dev/Cpp/EffekseerRendererDX12/EffekseerRenderer/EffekseerRendererDX12.Renderer.cpp
+index ea5a567..cb79389 100644
+--- a/Dev/Cpp/EffekseerRendererDX12/EffekseerRenderer/EffekseerRendererDX12.Renderer.cpp
++++ b/Dev/Cpp/EffekseerRendererDX12/EffekseerRenderer/EffekseerRendererDX12.Renderer.cpp
+@@ -1,7 +1,7 @@
+ 癤?include "EffekseerRendererDX12.Renderer.h"
+-#include "../../3rdParty/LLGI/src/DX12/LLGI.CommandListDX12.h"
+-#include "../../3rdParty/LLGI/src/DX12/LLGI.GraphicsDX12.h"
+-#include "../../3rdParty/LLGI/src/DX12/LLGI.TextureDX12.h"
++#include <DX12/LLGI.CommandListDX12.h>
++#include <DX12/LLGI.GraphicsDX12.h>
++#include <DX12/LLGI.TextureDX12.h>
+ #include "../EffekseerMaterialCompiler/DirectX12/EffekseerMaterialCompilerDX12.h"
+ #include "../EffekseerRendererLLGI/EffekseerRendererLLGI.RendererImplemented.h"
+ 
+diff --git a/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.MaterialLoader.h b/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.MaterialLoader.h
+index 59553a8..a5a64f0 100644
+--- a/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.MaterialLoader.h
++++ b/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.MaterialLoader.h
+@@ -2,7 +2,7 @@
+ #ifndef __EFFEKSEERRENDERER_LLGI_MATERIALLOADER_H__
+ #define __EFFEKSEERRENDERER_LLGI_MATERIALLOADER_H__
+ 
+-#include "../3rdParty/LLGI/src/LLGI.Compiler.h"
++#include <LLGI.Compiler.h>
+ #include "../Effekseer/Effekseer/Material/Effekseer.MaterialCompiler.h"
+ #include "EffekseerRendererLLGI.DeviceObject.h"
+ #include "EffekseerRendererLLGI.RendererImplemented.h"
+diff --git a/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.Renderer.cpp b/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.Renderer.cpp
+index ea3f254..cc600fc 100644
+--- a/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.Renderer.cpp
++++ b/Dev/Cpp/EffekseerRendererLLGI/EffekseerRendererLLGI.Renderer.cpp
+@@ -745,7 +745,7 @@ void RendererImplemented::DrawSprites(int32_t spriteCount, int32_t vertexOffset)
+ 		assert(constantBufferVS != nullptr);
+ 		memcpy(constantBufferVS->Lock(), currentShader->GetVertexConstantBuffer(), currentShader->GetVertexConstantBufferSize());
+ 		constantBufferVS->Unlock();
+-		GetCurrentCommandList()->SetConstantBuffer(constantBufferVS, LLGI::ShaderStageType::Vertex);
++		GetCurrentCommandList()->SetConstantBuffer(constantBufferVS, static_cast<int32_t>(LLGI::ShaderStageType::Vertex));
+ 	}
+ 
+ 	if (currentShader->GetPixelConstantBufferSize() > 0)
+@@ -754,7 +754,7 @@ void RendererImplemented::DrawSprites(int32_t spriteCount, int32_t vertexOffset)
+ 		assert(constantBufferPS != nullptr);
+ 		memcpy(constantBufferPS->Lock(), currentShader->GetPixelConstantBuffer(), currentShader->GetPixelConstantBufferSize());
+ 		constantBufferPS->Unlock();
+-		GetCurrentCommandList()->SetConstantBuffer(constantBufferPS, LLGI::ShaderStageType::Pixel);
++		GetCurrentCommandList()->SetConstantBuffer(constantBufferPS, static_cast<int32_t>(LLGI::ShaderStageType::Pixel));
+ 	}
+ 
+ 	auto piplineState = GetOrCreatePiplineState();
+@@ -799,7 +799,7 @@ void RendererImplemented::DrawPolygonInstanced(int32_t vertexCount, int32_t inde
+ 		assert(constantBufferVS != nullptr);
+ 		memcpy(constantBufferVS->Lock(), currentShader->GetVertexConstantBuffer(), currentShader->GetVertexConstantBufferSize());
+ 		constantBufferVS->Unlock();
+-		GetCurrentCommandList()->SetConstantBuffer(constantBufferVS, LLGI::ShaderStageType::Vertex);
++		GetCurrentCommandList()->SetConstantBuffer(constantBufferVS, static_cast<int32_t>(LLGI::ShaderStageType::Vertex));
+ 	}
+ 
+ 	if (currentShader->GetPixelConstantBufferSize() > 0)
+@@ -808,7 +808,7 @@ void RendererImplemented::DrawPolygonInstanced(int32_t vertexCount, int32_t inde
+ 		assert(constantBufferPS != nullptr);
+ 		memcpy(constantBufferPS->Lock(), currentShader->GetPixelConstantBuffer(), currentShader->GetPixelConstantBufferSize());
+ 		constantBufferPS->Unlock();
+-		GetCurrentCommandList()->SetConstantBuffer(constantBufferPS, LLGI::ShaderStageType::Pixel);
++		GetCurrentCommandList()->SetConstantBuffer(constantBufferPS, static_cast<int32_t>(LLGI::ShaderStageType::Pixel));
+ 	}
+ 
+ 	auto piplineState = GetOrCreatePiplineState();
+@@ -894,18 +894,18 @@ void RendererImplemented::SetTextures(Shader* shader, Effekseer::Backend::Textur
+ 		if (textures[i] == nullptr)
+ 		{
+ 			GetCurrentCommandList()->SetTexture(
+-				nullptr, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i, LLGI::ShaderStageType::Vertex);
++				nullptr, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i);
+ 			GetCurrentCommandList()->SetTexture(
+-				nullptr, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i, LLGI::ShaderStageType::Pixel);
++				nullptr, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i);
+ 		}
+ 		else
+ 		{
+ 			auto texture = static_cast<Backend::Texture*>(textures[i].Get());
+ 			auto t = texture->GetTexture().get();
+ 			GetCurrentCommandList()->SetTexture(
+-				t, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i, LLGI::ShaderStageType::Vertex);
++				t, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i);
+ 			GetCurrentCommandList()->SetTexture(
+-				t, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i, LLGI::ShaderStageType::Pixel);
++				t, ws[(int)state.TextureWrapTypes[i]], fs[(int)state.TextureFilterTypes[i]], i);
+ 		}
+ 	}
+ }

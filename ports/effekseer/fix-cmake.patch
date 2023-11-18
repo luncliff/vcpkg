@@ -1,0 +1,313 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e97c907..42688fe 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -171,194 +171,28 @@ endif()
+ if(BUILD_VIEWER)
+ 
+     # zlib
+-    if(BUILD_WITH_POSTFIX)
+-        set(ZLIB_INSTALL "")
+-    else()
+-        set(ZLIB_INSTALL ${CMAKE_COMMAND} --install . --prefix <INSTALL_DIR>)
+-    endif()
+-
+-    ExternalProject_Add(
+-        ExternalProject_zlib
+-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/zlib
+-        PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/zlib
+-        INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib
+-        INSTALL_COMMAND ${ZLIB_INSTALL}
+-        CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib
+-                        -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
+-                        -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
+-                        -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
+-                        -DASM686=off
+-                        -DAMD64=off
+-                        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+-    )
+-    
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib/include)
+-    list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib/lib)
+-    
+-    if(MSVC)
+-        set(ZLIB_LIB_DEBUG "zlibstaticd")
+-        set(ZLIB_LIB_RELEASE "zlibstatic")
+-    elseif(BUILD_WITH_POSTFIX)
+-        set(ZLIB_LIB_DEBUG "z")
+-        set(ZLIB_LIB_RELEASE "z")
+-    elseif(UNIX AND NOT APPLE)
+-        set(ZLIB_LIB_DEBUG "libz.a")
+-        set(ZLIB_LIB_RELEASE "libz.a")
+-    else()
+-        set(ZLIB_LIB_DEBUG "z")
+-        set(ZLIB_LIB_RELEASE "z")
+-    endif()
++    find_package(ZLIB REQUIRED) # ZLIB::ZLIB
+ 
+     # libpng
+-    if(BUILD_WITH_POSTFIX)
+-        set(LIBPNG_INSTALL "")
+-    else()
+-        set(LIBPNG_INSTALL ${CMAKE_COMMAND} --install . --prefix <INSTALL_DIR>)
+-    endif()
+-
+-    ExternalProject_Add(
+-        ExternalProject_libpng
+-        DEPENDS         ExternalProject_zlib
+-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Dev/Cpp/3rdParty/libpng
+-        PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/libpng
+-        INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libpng
+-        INSTALL_COMMAND ${LIBPNG_INSTALL}
+-        CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libpng
+-                        -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
+-                        -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
+-                        -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
+-                        -DZLIB_INCLUDE_DIRS=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib/include
+-                        -DZLIB_INCLUDE_DIR=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib/include
+-                        -DPNG_BUILD_ZLIB=ON
+-                        -DPNG_SHARED=OFF
+-                        -DPNG_EXECUTABLES=OFF
+-                        -DPNG_TESTS=OFF
+-                        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+-    )
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libpng/include)
+-    list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libpng/lib)
+-    
+-    if(MSVC)
+-        set(LIBPNG_LIB_DEBUG "libpng16_staticd")
+-        set(LIBPNG_LIB_RELEASE "libpng16_static")
+-    elseif(BUILD_WITH_POSTFIX)
+-        set(LIBPNG_LIB_DEBUG "png16d")
+-        set(LIBPNG_LIB_RELEASE "png16")
+-    else()
+-        set(LIBPNG_LIB_DEBUG "png16")
+-        set(LIBPNG_LIB_RELEASE "png16")
+-    endif()
++    find_package(PNG REQUIRED) # PNG::PNG
+ 
+     # libgd
+-    ExternalProject_Add(
+-        ExternalProject_libgd
+-        DEPENDS         ExternalProject_zlib
+-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/libgd
+-        PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/libgd
+-        INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libgd
+-        PATCH_COMMAND   ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Dev/3rdPartyPatch/libgd-getopt.c <SOURCE_DIR>/src/getopt.c
+-        CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libgd
+-                        -DCMAKE_DEBUG_POSTFIX=d
+-                        -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
+-                        -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
+-                        -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
+-                        -DZLIB_ROOT=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib
+-                        -DBUILD_STATIC_LIBS=ON
+-                        -DBUILD_SHARED_LIBS=OFF
+-                        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+-    )
+-
+-    if(MSVC)
+-        set(GD_LIB_DEBUG "libgd_staticd")
+-        set(GD_LIB_RELEASE "libgd_static")
+-    elseif(BUILD_WITH_POSTFIX)
+-        set(GD_LIB_DEBUG "gdd")
+-        set(GD_LIB_RELEASE "gd")
+-    else()
+-        set(GD_LIB_DEBUG "gd")
+-        set(GD_LIB_RELEASE "gd")
+-    endif()
+-
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libgd/include)
+-    list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/libgd/lib)
++    find_package(PkgConfig REQUIRED)
++    pkg_check_modules(LIBGD REQUIRED IMPORTED_TARGET gdlib) # PkgConfig::LIBGD
+ 
+     # OpenSoundMixer
+-    ExternalProject_Add(
+-        ExternalProject_OpenSoundMixer
+-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/OpenSoundMixer
+-        PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/OpenSoundMixer
+-        INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/OpenSoundMixer
+-        CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/OpenSoundMixer
+-                        -DCMAKE_DEBUG_POSTFIX=d
+-                        -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
+-                        -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
+-                        -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
+-                        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+-    )
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/OpenSoundMixer/src)
+-    list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/OpenSoundMixer/lib)
+-
+-    if(BUILD_WITH_POSTFIX)
+-        set(OSM_LIB_DEBUG "OpenSoundMixerd")
+-        set(OSM_LIB_RELEASE "OpenSoundMixer")
+-    else()
+-        set(OSM_LIB_DEBUG "OpenSoundMixer")
+-        set(OSM_LIB_RELEASE "OpenSoundMixer")
+-    endif()
+ endif()
+ 
+ if(BUILD_VIEWER OR BUILD_TEST)
+     # glew
+     if(NOT APPLE)
+-    ExternalProject_Add(
+-        ExternalProject_glew
+-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/glew
+-        PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/glew
+-        INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew
+-        PATCH_COMMAND   ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Dev/3rdPartyPatch/glew-CMakeLists.txt <SOURCE_DIR>/CMakeLists.txt
+-        CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew
+-                        -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
+-                        -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
+-                        -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
+-                        -DBUILD_SHARED_LIBS=OFF
+-                        -DGLEW_BUILD_INFO=OFF
+-                        -DBUILD_UTILS=OFF
+-                        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+-    )
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew/include)
+-    list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew/lib)
++        find_package(GLEW REQUIRED) # GLEW::GLEW
+     endif()
+ endif()
+ 
+ if(BUILD_VIEWER OR BUILD_EXAMPLES OR BUILD_TEST)
+     # glfw
+-    ExternalProject_Add(
+-        ExternalProject_glfw
+-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/glfw
+-        PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/glfw
+-        INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glfw
+-        CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glfw
+-                        -DCMAKE_DEBUG_POSTFIX=d
+-                        -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
+-                        -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
+-                        -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
+-                        -DGLFW_BUILD_EXAMPLES=OFF
+-                        -DGLFW_BUILD_TESTS=OFF
+-                        -DGLFW_BUILD_DOCS=OFF
+-                        -DGLFW_INSTALL=ON
+-                        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+-    )
+-
+-    if(BUILD_WITH_POSTFIX)
+-        set(GLFW3_LIB_DEBUG "glfw3d")
+-        set(GLFW3_LIB_RELEASE "glfw3")
+-    else()
+-        set(GLFW3_LIB_DEBUG "glfw3")
+-        set(GLFW3_LIB_RELEASE "glfw3")
+-    endif()
+-
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glfw/include)
+-    list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glfw/lib)
++    find_package(glfw3 CONFIG REQUIRED) # glfw
+ endif()
+ 
+ # resource
+diff --git a/Dev/Cpp/CMakeLists.txt b/Dev/Cpp/CMakeLists.txt
+index 89279b3..22fb725 100644
+--- a/Dev/Cpp/CMakeLists.txt
++++ b/Dev/Cpp/CMakeLists.txt
+@@ -15,7 +15,7 @@ endif()
+ 
+ function(WarnError target)
+     if(MSVC)
+-        target_compile_options(${target} PRIVATE /we4267 /we4456 /we4458 /we4715)
++        # target_compile_options(${target} PRIVATE /we4267 /we4456 /we4458 /we4715)
+     endif()
+ endfunction()
+ 
+@@ -58,15 +58,26 @@ if (MSVC)
+ endif()
+ 
+ if (USE_OPENGLES2)
+-	add_definitions(-D__EFFEKSEER_RENDERER_GLES2__)
++    find_path(OPENGL_EGL_INCLUDE_DIRS NAMES "EGL/egl.h" REQUIRED)
++    find_library(OPENGL_egl_LIBRARY NAMES EGL libEGL REQUIRED)
++    find_path(OPENGL_INCLUDE_DIR NAMES "GLES2/gl2.h" REQUIRED)
++    find_library(OPENGL_gles2_LIBRARY NAMES GLESv2 libGLESv2 REQUIRED)
++    find_package(OpenGL REQUIRED)
++	add_compile_definitions(__EFFEKSEER_RENDERER_GLES2__)
+ endif()
+ 
+ if (USE_OPENGLES3)
+-	add_definitions(-D__EFFEKSEER_RENDERER_GLES3__)
++    find_path(OPENGL_EGL_INCLUDE_DIRS NAMES "EGL/egl.h" REQUIRED)
++    find_library(OPENGL_egl_LIBRARY NAMES EGL libEGL REQUIRED)
++    find_path(OPENGL_INCLUDE_DIR NAMES "GLES3/gl3.h" REQUIRED)
++    find_library(OPENGL_gles3_LIBRARY NAMES GLESv3 libGLESv3 GLESv2 libGLESv2 REQUIRED)
++    find_package(OpenGL REQUIRED)
++	add_compile_definitions(__EFFEKSEER_RENDERER_GLES3__)
+ endif()
+ 
+ if (USE_OPENGL3)
+-	add_definitions(-D__EFFEKSEER_RENDERER_GL3__)
++    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
++	add_compile_definitions(__EFFEKSEER_RENDERER_GL3__)
+ endif()
+ 
+ add_subdirectory(Effekseer)
+@@ -103,9 +114,8 @@ if (BUILD_DX12 OR BUILD_METAL OR BUILD_VULKAN)
+         set(GLSLANG_INCLUDE_DIR "${GLSLANG_INCLUDE_DIR}" CACHE STRING "For LLGI" FORCE)
+     endif()
+ 
+-    add_subdirectory(3rdParty/LLGI)
+-    set_target_properties (LLGI PROPERTIES FOLDER Thirdparty)
+-    set(BUILD_TEST ${BUILD_TEST_TEMP})
++    find_package(LLGI CONFIG REQUIRED) # LLGI
++    link_libraries(LLGI)
+ endif()
+ 
+ if (BUILD_DX9)
+@@ -121,6 +131,16 @@ endif()
+ if (BUILD_GL)
+     add_subdirectory(EffekseerRendererGL)
+     set_property(TARGET EffekseerRendererGL PROPERTY FOLDER Libraries)
++    target_include_directories(EffekseerRendererGL PRIVATE
++        ${OPENGL_EGL_INCLUDE_DIRS}
++        ${OPENGL_INCLUDE_DIR}   
++    )
++    target_link_libraries(EffekseerRendererGL PUBLIC
++        ${OPENGL_egl_LIBRARY}
++        ${OPENGL_gles2_LIBRARY}
++        ${OPENGL_gles3_LIBRARY}
++        ${OPENGL_LIBRARIES}
++    )
+ endif()
+ 
+ if (BUILD_DX12)
+@@ -159,8 +179,7 @@ if (USE_OSM OR BUILD_VIEWER)
+ endif()
+ 
+ if(BUILD_VIEWER OR BUILD_TEST)
+-    add_subdirectory(3rdParty/spdlog EXCLUDE_FROM_ALL)
+-    list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty/spdlog/include/)
++    find_package(spdlog CONFIG REQUIRED) # spdlog::spdlog
+ endif()
+ 
+ if (BUILD_VIEWER)
+diff --git a/Dev/Cpp/EditorCommon/CMakeLists.txt b/Dev/Cpp/EditorCommon/CMakeLists.txt
+index 2230e3e..f4e100a 100644
+--- a/Dev/Cpp/EditorCommon/CMakeLists.txt
++++ b/Dev/Cpp/EditorCommon/CMakeLists.txt
+@@ -87,7 +87,7 @@ if(UNIX AND NOT APPLE)
+ 
+ endif()
+ 
+-add_dependencies(EditorCommon ExternalProject_glfw)
++add_dependencies(EditorCommon glfw3)
+ 
+ target_include_directories(
+     EditorCommon
+diff --git a/Dev/Cpp/EffekseerMaterialEditor/CMakeLists.txt b/Dev/Cpp/EffekseerMaterialEditor/CMakeLists.txt
+index a5228a0..78ac5ed 100644
+--- a/Dev/Cpp/EffekseerMaterialEditor/CMakeLists.txt
++++ b/Dev/Cpp/EffekseerMaterialEditor/CMakeLists.txt
+@@ -46,7 +46,7 @@ if (MSVC)
+ endif()
+ 
+ if(WIN32)
+-    add_dependencies(EffekseerMaterialEditor ExternalProject_glew ExternalProject_glfw)
++    target_link_libraries(EffekseerMaterialEditor GLEW::GLEW glfw3)
+ endif()
+ 
+ target_include_directories(

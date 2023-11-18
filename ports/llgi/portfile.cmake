@@ -36,7 +36,7 @@ vcpkg_cmake_configure(
         USE_MSVC_RUNTIME_LIBRARY_DLL
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake")
+vcpkg_cmake_config_fixup(CONFIG_PATH "lib/cmake" PACKAGE_NAME LLGI)
 
 if("tool" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES ShaderTranspiler AUTO_CLEAN)
@@ -48,5 +48,20 @@ file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/bin"
     "${CURRENT_PACKAGES_DIR}/bin"
 )
+
+file(GLOB headers "${SOURCE_PATH}/src/Utils/*.h")
+file(INSTALL ${headers} DESTINATION "${CURRENT_PACKAGES_DIR}/include/LLGI/Utils")
+
+if("vulkan" IN_LIST FEATURES)
+    file(GLOB headers "${SOURCE_PATH}/src/Vulkan/*.h")
+    file(INSTALL ${headers} DESTINATION "${CURRENT_PACKAGES_DIR}/include/LLGI/Vulkan")
+endif()
+if(VCPKG_TARGET_IS_WINDOWS)
+    file(GLOB headers "${SOURCE_PATH}/src/DX12/*.h")
+    file(INSTALL ${headers} DESTINATION "${CURRENT_PACKAGES_DIR}/include/LLGI/DX12")
+elseif(VCPKG_TARGET_IS_OSX)
+    file(GLOB headers "${SOURCE_PATH}/src/Metal/*.h")
+    file(INSTALL ${headers} DESTINATION "${CURRENT_PACKAGES_DIR}/include/LLGI/Metal")
+endif()
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")

@@ -1,0 +1,63 @@
+{
+  "name": "effekseer",
+  "version-string": "1.70e",
+  "homepage": "https://github.com/effekseer/effekseer",
+  "license": null,
+  "dependencies": [
+    "llgi",
+    "opengl-registry",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "gles": {
+      "description": "Build with OpenGL ES",
+      "supports": "windows | linux",
+      "dependencies": [
+        {
+          "name": "angle",
+          "platform": "windows"
+        },
+        "egl-registry"
+      ]
+    },
+    "tool": {
+      "description": "Build Viewer, Editor",
+      "supports": "windows | linux | osx",
+      "dependencies": [
+        {
+          "name": "glew",
+          "platform": "!osx"
+        },
+        "glfw3",
+        "glslang",
+        {
+          "name": "libgd",
+          "features": [
+            "png"
+          ]
+        }
+      ]
+    },
+    "vulkan": {
+      "description": "Build vulkan modules",
+      "supports": "windows | linux",
+      "dependencies": [
+        "glslang",
+        {
+          "name": "llgi",
+          "features": [
+            "vulkan"
+          ]
+        },
+        "vulkan"
+      ]
+    }
+  }
+}
