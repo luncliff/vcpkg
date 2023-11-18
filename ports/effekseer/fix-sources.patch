@@ -16,7 +16,7 @@ index ea5a567..cb79389 100644
 --- a/Dev/Cpp/EffekseerRendererDX12/EffekseerRenderer/EffekseerRendererDX12.Renderer.cpp
 +++ b/Dev/Cpp/EffekseerRendererDX12/EffekseerRenderer/EffekseerRendererDX12.Renderer.cpp
 @@ -1,7 +1,7 @@
- 癤?include "EffekseerRendererDX12.Renderer.h"
+ #include "EffekseerRendererDX12.Renderer.h"
 -#include "../../3rdParty/LLGI/src/DX12/LLGI.CommandListDX12.h"
 -#include "../../3rdParty/LLGI/src/DX12/LLGI.GraphicsDX12.h"
 -#include "../../3rdParty/LLGI/src/DX12/LLGI.TextureDX12.h"
