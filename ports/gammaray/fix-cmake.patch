@@ -1,0 +1,33 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2d09b36..b884951 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -86,8 +86,8 @@ project(
+ )
+ 
+ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ECM/find-modules)
+-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ECM/modules)
++find_package(ECM CONFIG REQUIRED NO_MODULE)
++list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/KDAB/modules)
+ 
+ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
+@@ -150,7 +150,7 @@ set(KDE_INSTALL_USE_QT_SYS_PATHS OFF)
+ include(ECMGeneratePriFile)
+ include(ECMEnableSanitizers)
+ include(GenerateExportHeader)
+-include("3rdparty/backward-cpp/BackwardConfig.cmake")
++find_package(Backward CONFIG REQUIRED)
+ 
+ # Exit for blacklisted compilers (those that don't support full C++11)
+ #  MSVC++ < 2015 aka 1900
+@@ -522,7 +522,7 @@ endif()
+ 
+ # these need to included after the last Qt-related find_package() call
+ include(Qt5LegacySupport)
+-include(ECMQt5ToQt6Porting)
++include(${PROJECT_SOURCE_DIR}/cmake/ECM/modules/ECMQt5ToQt6Porting.cmake)
+ 
+ set(MACOS_DISABLE_UNSUPPORTED_TESTS FALSE)
+ if(APPLE)
