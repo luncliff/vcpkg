@@ -2948,6 +2948,10 @@
       "baseline": "gamma-2018-01-27",
       "port-version": 6
     },
+    "gammaray": {
+      "baseline": "2024-07-12",
+      "port-version": 0
+    },
     "gapp": {
       "baseline": "0.2.0",
       "port-version": 0
