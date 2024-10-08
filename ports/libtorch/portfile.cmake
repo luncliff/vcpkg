@@ -1,67 +1,14 @@
-vcpkg_download_distfile(
-    CUDNN_9_FIX
-    URLS https://github.com/pytorch/pytorch/commit/e14026bc2a6cd80bedffead77a5d7b75a37f8e67.patch?full_index=1
-    SHA512 9569547b44b61f9559f0e7ab91f2be51657ece4f5462b6860cb5eae8d23d01187d6af046b369a77a228fe4d7153f5c683b686e84c1296a662f83e5f1f281bc7e
-    FILENAME libtorch-cudnn-9-fix-e14026bc2a6cd80bedffead77a5d7b75a37f8e67.patch
-)
-
-vcpkg_download_distfile(
-    CUDA_THRUST_MISSING_HEADER_FIX
-    URLS https://github.com/pytorch/pytorch/commit/2a440348958b3f0a2b09458bd76fe5959b371c0c.patch?full_index=1
-    SHA512 eff10d81b1c635108ad1b95a430865a76ab3f2079be74e61e06876942ac1fd43a274fc1c73e43c2c01b9ce5aca648213ef75c13c28b8ffa40497e4e26d5e3b16
-    FILENAME libtorch-cuda-thrust-missing-header-2a440348958b3f0a2b09458bd76fe5959b371c0c.patch
-)
-
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/pytorch
     REF "v${VERSION}"
-    SHA512 a8961d78ad785b13c959a0612563a60e0de17a7c8bb9822ddea9a24072796354d07e81c47b6cc8761b21a6448845b088cf80e1661d9e889b0ed5474d3dc76756
-    HEAD_REF master
-    PATCHES
-        "${CUDNN_9_FIX}"
-        "${CUDA_THRUST_MISSING_HEADER_FIX}"
-        cmake-fixes.patch
-        more-fixes.patch
-        fix-build.patch
-        clang-cl.patch
-        cuda-adjustments.patch
-        fix-api-export.patch
-        fxdiv.patch
-        protoc.patch
-        fix-sleef.patch
-        fix-glog.patch
-        fix-msvc-ICE.patch
-        fix-calculate-minloglevel.patch
-        force-cuda-include.patch
-        fix-aten-cutlass.patch
-        fix-build-error-with-fmt11.patch
+    SHA512 0
+    HEAD_REF main
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") # We must use generated header files
-
-vcpkg_from_github(
-    OUT_SOURCE_PATH src_kineto
-    REPO pytorch/kineto
-    REF 49e854d805d916b2031e337763928d2f8d2e1fbf
-    SHA512 ae63d48dc5b8ac30c38c2ace60f16834c7e9275fa342dc9f109d4fbc87b7bd674664f6413c36d0c1ab5a7da786030a4108d83daa4502b2f30239283ea3acdb16
-    HEAD_REF main
-    PATCHES
-      kineto.patch
-)
-file(COPY "${src_kineto}/" DESTINATION "${SOURCE_PATH}/third_party/kineto")
-
-vcpkg_from_github(
-    OUT_SOURCE_PATH src_cudnn
-    REPO NVIDIA/cudnn-frontend # new port ?
-    REF 12f35fa2be5994c1106367cac2fba21457b064f4
-    SHA512 a7e4bf58f82ca0b767df35da1b3588e2639ea2ef22ed0c47e989fb4cde5a28b0605b228b42fcaefbdf721bfbb91f2a9e7d41352ff522bd80b63db6d27e44ec20
-    HEAD_REF main
-)
-file(COPY "${src_cudnn}/" DESTINATION "${SOURCE_PATH}/third_party/cudnn_frontend")
-
 
 file(REMOVE
   "${SOURCE_PATH}/cmake/Modules/FindBLAS.cmake"
@@ -88,7 +35,6 @@ x_vcpkg_get_python_packages(
     PACKAGES typing-extensions pyyaml numpy
     OUT_PYTHON_VAR PYTHON3
 )
-#set(PYTHON3 "${CURRENT_HOST_INSTALLED_DIR}/tools/python3/python${VCPKG_HOST_EXECUTABLE_SUFFIX}")
 message(STATUS "Using Python3: ${PYTHON3}")
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
@@ -142,6 +88,12 @@ else()
     list(APPEND FEATURE_OPTIONS -DINTERN_BUILD_MOBILE=OFF)
 endif()
 
+if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
+    set(IS_APPLE ON)
+else()
+    set(IS_APPLE OFF)
+endif()
+
 string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 
 vcpkg_cmake_configure(
@@ -160,9 +112,9 @@ vcpkg_cmake_configure(
         -DBUILD_TEST=OFF
         -DATEN_NO_TEST=ON
         -DUSE_SYSTEM_LIBS=ON
-        -DUSE_METAL=OFF
-        -DUSE_PYTORCH_METAL=OFF
-        -DUSE_PYTORCH_METAL_EXPORT=OFF
+        -DUSE_METAL=${IS_APPLE}
+        -DUSE_PYTORCH_METAL=${IS_APPLE}
+        -DUSE_PYTORCH_METAL_EXPORT=${IS_APPLE}
         -DUSE_GFLAGS=ON
         -DUSE_GLOG=ON
         -DUSE_LMDB=ON
@@ -196,16 +148,10 @@ vcpkg_cmake_configure(
         -DAT_MKLDNN_ENABLED=OFF
         -DUSE_OPENCL=ON
         -DUSE_NUMPY=ON
-        -DUSE_KINETO=OFF #
-    OPTIONS_RELEASE
-      -DPYTHON_LIBRARY=${CURRENT_INSTALLED_DIR}/lib/python311.lib
-    OPTIONS_DEBUG
-      -DPYTHON_LIBRARY=${CURRENT_INSTALLED_DIR}/debug/lib/python311_d.lib
     MAYBE_UNUSED_VARIABLES
         USE_NUMA
         USE_SYSTEM_BIND11
         MKLDNN_CPU_RUNTIME
-        PYTHON_LIBRARY
 )
 
 vcpkg_cmake_install()
