@@ -7,6 +7,7 @@
   "supports": "(windows & !static) | osx | linux",
   "dependencies": [
     "blas",
+    "cpp-httplib",
     "cpuinfo",
     "eigen3",
     "fftw3",
@@ -17,12 +18,12 @@
     },
     "fmt",
     "foxi",
-    "foxi",
     "fp16",
     "gemmlowp",
     "gflags",
     "glog",
     "lapack",
+    "libkineto",
     "lmdb",
     "mimalloc",
     "onnx",
@@ -66,7 +67,8 @@
         "cudnn",
         "magma",
         "nvidia-cudnn-frontend",
-        "nvidia-cutlass"
+        "nvidia-cutlass",
+        "nvidia-tools-extension-sdk"
       ]
     },
     "dist": {

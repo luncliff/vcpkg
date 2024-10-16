@@ -99,6 +99,7 @@ string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE
+    WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
@@ -130,6 +131,7 @@ vcpkg_cmake_configure(
         -DUSE_SYSTEM_EIGEN_INSTALL=ON
         -DUSE_SYSTEM_CPUINFO=ON
         -DUSE_SYSTEM_PTHREADPOOL=ON
+        -DUSE_SYSTEM_XNNPACK=ON
         -DUSE_SYSTEM_PYBIND11=ON
         -DUSE_SYSTEM_ZSTD=ON
         -DUSE_SYSTEM_GLOO=ON
@@ -159,11 +161,12 @@ vcpkg_copy_pdbs()
 
 vcpkg_cmake_config_fixup(PACKAGE_NAME Caffe2 CONFIG_PATH "share/cmake/Caffe2" DO_NOT_DELETE_PARENT_CONFIG_PATH)
 vcpkg_cmake_config_fixup(PACKAGE_NAME Torch CONFIG_PATH "share/cmake/Torch")
-vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Torch/TorchConfig.cmake" "/../../../" "/../../")
-vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Caffe2/Caffe2Config.cmake" "/../../../" "/../../")
-vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Caffe2/Caffe2Config.cmake"
-  "set(Caffe2_MAIN_LIBS torch_library)"
-  "set(Caffe2_MAIN_LIBS torch_library)\nfind_dependency(Eigen3)")
+
+# vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Torch/TorchConfig.cmake" "/../../../" "/../../")
+# vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Caffe2/Caffe2Config.cmake" "/../../../" "/../../")
+# vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/Caffe2/Caffe2Config.cmake"
+#   "set(Caffe2_MAIN_LIBS torch_library)"
+#   "set(Caffe2_MAIN_LIBS torch_library)\nfind_dependency(Eigen3)")
 
 # Traverse the folder and remove "some" empty folders
 function(cleanup_once folder)
