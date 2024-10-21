@@ -6,6 +6,10 @@ vcpkg_from_github(
     REF "v${VERSION}"
     SHA512 7e9b4485e242eaf0d648765c6621d73d95e7107b766646a098175436d1ab2e2b864badd0757a3bab6b7c318233f2120bad9ac07b39bb9e357897919580c87631
     HEAD_REF main
+    PATCHES
+        fix-cmake.patch
+        fix-sources.patch
+        # todo: XNNPACK version update
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") # We must use generated header files
@@ -32,7 +36,7 @@ message(STATUS "Using protoc: ${PROTOC}")
 
 x_vcpkg_get_python_packages(
     PYTHON_VERSION 3
-    PACKAGES typing-extensions pyyaml numpy
+    PACKAGES typing-extensions pyyaml numpy pybind11
     OUT_PYTHON_VAR PYTHON3
 )
 message(STATUS "Using Python3: ${PYTHON3}")
@@ -99,7 +103,7 @@ string(COMPARE EQUAL "${VCPKG_CRT_LINKAGE}" "static" USE_STATIC_RUNTIME)
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE
-    WINDOWS_USE_MSBUILD
+    # WINDOWS_USE_MSBUILD
     OPTIONS
         ${FEATURE_OPTIONS}
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}

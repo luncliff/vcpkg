@@ -29,6 +29,7 @@
     "onnx",
     "onnx-optimizer",
     "opencl",
+    "opentelemetry-cpp",
     "pocketfft",
     "protobuf",
     {
