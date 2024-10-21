@@ -41,6 +41,17 @@ x_vcpkg_get_python_packages(
 )
 message(STATUS "Using Python3: ${PYTHON3}")
 
+get_filename_component(PYTHON_PATH "${PYTHON3}" PATH)
+get_filename_component(PYTHON_ROOT "${PYTHON_PATH}" PATH)
+find_path(SITE_PACKAGES_DIR
+    NAMES "typing_extensions.py"
+    PATHS "${PYTHON_ROOT}/Lib/site-packages"
+          "${PYTHON_ROOT}/lib/python3.11/site-packages"
+          "${PYTHON_ROOT}/lib/python3.12/site-packages"
+    REQUIRED
+)
+get_filename_component(pybind11_DIR "${SITE_PACKAGES_DIR}/pybind11/share/cmake/pybind11" ABSOLUTE)
+
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
   FEATURES
     dist    USE_DISTRIBUTED # MPI, Gloo, TensorPipe
@@ -109,7 +120,7 @@ vcpkg_cmake_configure(
         -DProtobuf_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE:FILEPATH=${PROTOC}
         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON3}
-        #-DPython3_EXECUTABLE:FILEPATH=${PYTHON3}
+        -Dpybind11_DIR:PATH=${pybind11_DIR}
         -DCAFFE2_STATIC_LINK_CUDA=ON
         -DCAFFE2_USE_MSVC_STATIC_RUNTIME=${USE_STATIC_RUNTIME}
         -DBUILD_CUSTOM_PROTOBUF=OFF
