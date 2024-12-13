@@ -1,0 +1,39 @@
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 8574602..0a86f8f 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -92,7 +92,7 @@ if (NOT WIN32)
+     URL ${DEP_URL_google_nsync}
+     URL_HASH SHA1=${DEP_SHA1_google_nsync}
+     PATCH_COMMAND ${Patch_EXECUTABLE} --binary --ignore-whitespace -p1 < ${PROJECT_SOURCE_DIR}/patches/nsync/nsync_1.26.0.patch
+-    FIND_PACKAGE_ARGS NAMES nsync unofficial-nsync
++    FIND_PACKAGE_ARGS NAMES nsync_cpp
+   )
+   #nsync tests failed on Mac Build
+   set(NSYNC_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
+@@ -102,9 +102,9 @@ if (NOT WIN32)
+     add_library(nsync::nsync_cpp ALIAS nsync_cpp)
+     target_include_directories(nsync_cpp PUBLIC ${google_nsync_SOURCE_DIR}/public)
+   endif()
+-  if(TARGET unofficial::nsync::nsync_cpp AND NOT TARGET nsync::nsync_cpp)
+-    message(STATUS "Aliasing unofficial::nsync::nsync_cpp to nsync::nsync_cpp")
+-    add_library(nsync::nsync_cpp ALIAS unofficial::nsync::nsync_cpp)
++  if(TARGET nsync_cpp AND NOT TARGET nsync::nsync_cpp)
++    message(STATUS "Aliasing nsync_cpp to nsync::nsync_cpp")
++    add_library(nsync::nsync_cpp ALIAS nsync_cpp)
+   endif()
+ endif()
+ 
+diff --git a/cmake/onnxruntime_mlas.cmake b/cmake/onnxruntime_mlas.cmake
+index 0ba4694..ea891b2 100644
+--- a/cmake/onnxruntime_mlas.cmake
++++ b/cmake/onnxruntime_mlas.cmake
+@@ -725,7 +725,7 @@ block()
+ endblock()
+ 
+ 
+-if (NOT onnxruntime_ORT_MINIMAL_BUILD)
++if (false)
+ 
+   #
+   # Command line tool for quantization and de-quantization of 2-D fp32 tensors
