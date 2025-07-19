@@ -18,27 +18,9 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO pytorch/pytorch
     REF "v${VERSION}"
-    SHA512 a8961d78ad785b13c959a0612563a60e0de17a7c8bb9822ddea9a24072796354d07e81c47b6cc8761b21a6448845b088cf80e1661d9e889b0ed5474d3dc76756
-    HEAD_REF master
+    SHA512 0
+    HEAD_REF main
     PATCHES
-        "${CUDNN_9_FIX}"
-        "${CUDA_THRUST_MISSING_HEADER_FIX}"
-        cmake-fixes.patch
-        more-fixes.patch
-        fix-build.patch
-        clang-cl.patch
-        cuda-adjustments.patch
-        fix-api-export.patch
-        fxdiv.patch
-        protoc.patch
-        fix-sleef.patch
-        fix-glog.patch
-        fix-msvc-ICE.patch
-        fix-calculate-minloglevel.patch
-        force-cuda-include.patch
-        fix-aten-cutlass.patch
-        fix-build-error-with-fmt11.patch
-        no-abs-path.patch
         add-include-chrono.patch
 )
 
@@ -47,8 +29,8 @@ file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") # We must use generat
 vcpkg_from_github(
     OUT_SOURCE_PATH src_kineto
     REPO pytorch/kineto
-    REF 49e854d805d916b2031e337763928d2f8d2e1fbf
-    SHA512 ae63d48dc5b8ac30c38c2ace60f16834c7e9275fa342dc9f109d4fbc87b7bd674664f6413c36d0c1ab5a7da786030a4108d83daa4502b2f30239283ea3acdb16
+    REF 54ffcd4fb0bd77a5ecea46d11b4ed12d393c7fe3
+    SHA512 0
     HEAD_REF main
     PATCHES
       kineto.patch
@@ -57,9 +39,9 @@ file(COPY "${src_kineto}/" DESTINATION "${SOURCE_PATH}/third_party/kineto")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH src_cudnn
-    REPO NVIDIA/cudnn-frontend # new port ?
-    REF 12f35fa2be5994c1106367cac2fba21457b064f4
-    SHA512 a7e4bf58f82ca0b767df35da1b3588e2639ea2ef22ed0c47e989fb4cde5a28b0605b228b42fcaefbdf721bfbb91f2a9e7d41352ff522bd80b63db6d27e44ec20
+    REPO NVIDIA/cudnn-frontend
+    REF v1.12.0
+    SHA512 0
     HEAD_REF main
 )
 file(COPY "${src_cudnn}/" DESTINATION "${SOURCE_PATH}/third_party/cudnn_frontend")
