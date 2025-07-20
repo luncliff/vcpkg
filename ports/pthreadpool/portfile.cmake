@@ -4,11 +4,10 @@ endif()
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO Maratyszcza/pthreadpool
-    REF 052e441b70091656199e2283fb1c16a7db6f0f85 # there is a too much gap from the last release...
-    SHA512 33be676e65719ae8510ec4e8254809033528802681870f8c91b083ce4006e5f630b80207a7e675464b406a785cb45bc74628996ea4817c02816b7b58ddf3a2bc
+    REPO google/pthreadpool
+    REF c2ba5c50bb58d1397b693740cf75fad836a0d1bf
+    SHA512 3c1fc5b7ed716c7b581f06449b2ca9513331c3b279cb6b289c735c3d64f1ac0ac8f19d3362b28a35ce57ab066b60c4bb3147727cf4f23c2c906aab03d0b35729
     PATCHES
-        fix-cmakelists.patch
         fix-uwp.patch
 )
 
@@ -19,8 +18,9 @@ vcpkg_cmake_configure(
         -DPTHREADPOOL_BUILD_BENCHMARKS=OFF
 )
 vcpkg_cmake_install()
-vcpkg_copy_pdbs()
-vcpkg_cmake_config_fixup(PACKAGE_NAME unofficial-${PORT})
 
-file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
-file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/include/fxdiv.h"
+)
