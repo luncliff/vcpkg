@@ -50,10 +50,6 @@
     },
     "xnnpack"
   ],
-  "default-features": [
-    "opencv",
-    "zstd"
-  ],
   "features": {
     "cuda": {
       "description": "Build with CUDA GPU backend",
@@ -66,17 +62,10 @@
     },
     "dist": {
       "description": "Use distributed with MPI, Gloo, libuv, TensorPipe",
+      "supports": "linux | windows | osx",
       "dependencies": [
         {
           "name": "gloo",
-          "platform": "linux"
-        },
-        {
-          "name": "libtorch",
-          "default-features": false,
-          "features": [
-            "mpi"
-          ],
           "platform": "linux"
         },
         {
@@ -89,13 +78,6 @@
         }
       ]
     },
-    "leveldb": {
-      "description": "Build with LevelDB",
-      "dependencies": [
-        "leveldb",
-        "snappy"
-      ]
-    },
     "llvm": {
       "description": "Build with LLVM",
       "dependencies": [
@@ -103,8 +85,16 @@
       ]
     },
     "mpi": {
-      "description": "Build with MPI",
+      "description": "Use MPI for Caffe2. Only available if USE_DISTRIBUTED is on",
       "dependencies": [
+        {
+          "name": "libtorch",
+          "default-features": false,
+          "features": [
+            "dist"
+          ],
+          "platform": "linux"
+        },
         "mpi"
       ]
     },
@@ -115,11 +105,8 @@
         "nnpack"
       ]
     },
-    "opencv": {
-      "description": "Build with OpenCV",
-      "dependencies": [
-        "opencv"
-      ]
+    "openmp": {
+      "description": "Use OpenMP for parallel code"
     },
     "vulkan": {
       "description": "Build with Vulkan GPU backend",
@@ -127,12 +114,6 @@
         "vulkan",
         "vulkan-loader",
         "vulkan-memory-allocator"
-      ]
-    },
-    "zstd": {
-      "description": "Build with ZSTD",
-      "dependencies": [
-        "zstd"
       ]
     }
   }
