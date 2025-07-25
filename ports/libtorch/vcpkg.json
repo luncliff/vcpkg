@@ -6,6 +6,7 @@
   "license": null,
   "dependencies": [
     "blas",
+    "cpp-httplib",
     "cpuinfo",
     "eigen3",
     "fftw3",
@@ -56,6 +57,13 @@
       "dependencies": [
         "cuda",
         "cudnn",
+        {
+          "name": "gloo",
+          "features": [
+            "cuda"
+          ],
+          "platform": "linux"
+        },
         "magma",
         "nvidia-cutlass"
       ]
