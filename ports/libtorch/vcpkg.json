@@ -22,6 +22,10 @@
     "gemmlowp",
     "gflags",
     "glog",
+    {
+      "name": "kleidiai",
+      "platform": "arm"
+    },
     "lapack",
     "lmdb",
     "mimalloc",
@@ -49,7 +53,14 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     },
-    "xnnpack"
+    "xnnpack",
+    {
+      "name": "xnnpack",
+      "features": [
+        "kleidiai"
+      ],
+      "platform": "arm64"
+    }
   ],
   "features": {
     "cuda": {
@@ -110,6 +121,10 @@
       "description": "Build with NNPack",
       "supports": "linux | osx",
       "dependencies": [
+        {
+          "name": "kleidiai",
+          "platform": "arm64"
+        },
         "nnpack"
       ]
     },

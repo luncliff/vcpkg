@@ -334,3 +334,25 @@ index 189253a..eea52f3 100644
 -add_library(nlohmann INTERFACE IMPORTED)
 -include_directories(nlohmann SYSTEM INTERFACE ${PROJECT_SOURCE_DIR}/third_party/nlohmann/include)
 +find_package(nlohmann_json CONFIG REQUIRED) # nlohmann_json::nlohmann_json
+diff --git a/cmake/External/nnpack.cmake b/cmake/External/nnpack.cmake
+index 8a4a310..2808a5e 100644
+--- a/cmake/External/nnpack.cmake
++++ b/cmake/External/nnpack.cmake
+@@ -40,6 +40,17 @@ endif()
+ # (3) Android, iOS, Linux, macOS - supported
+ ##############################################################################
+ 
++if(DEFINED _VCPKG_INSTALLED_DIR)
++  add_library(nnpack INTERFACE IMPORTED GLOBAL)
++  find_path(NNPACK_INCLUDE_DIR NAMES nnpack.h REQUIRED)
++  find_library(NNPACK_LIBRARY NAMES nnpack REQUIRED)
++  set_target_properties(nnpack PROPERTIES
++    INTERFACE_INCLUDE_DIRECTORIES "${NNPACK_INCLUDE_DIR}"
++    INTERFACE_LINK_LIBRARIES "${NNPACK_LIBRARY}"
++  )
++  return()
++endif()
++
+ if(ANDROID OR IOS OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+   message(STATUS "Brace yourself, we are building NNPACK")
+   set(CAFFE2_THIRD_PARTY_ROOT ${PROJECT_SOURCE_DIR}/third_party)
