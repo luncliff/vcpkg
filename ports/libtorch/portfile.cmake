@@ -12,6 +12,7 @@ vcpkg_from_github(
         fix-cmake.patch
         fix-glog.patch
         fix-kineto.patch
+        fix-vulkan.patch
 )
 
 file(REMOVE_RECURSE "${SOURCE_PATH}/caffe2/core/macros.h") # We must use generated header files

@@ -356,3 +356,16 @@ index 8a4a310..2808a5e 100644
  if(ANDROID OR IOS OR ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
    message(STATUS "Brace yourself, we are building NNPACK")
    set(CAFFE2_THIRD_PARTY_ROOT ${PROJECT_SOURCE_DIR}/third_party)
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0d60681..1868220 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1102,6 +1102,8 @@ if(NOT MSVC)
+     append_cxx_flag_if_supported("-Wno-error=redundant-move" CMAKE_CXX_FLAGS)
+   endif()
+ else()
++  # math.h macros like M_PI, M_SQRT2, M_2_SQRTPI, etc.
++  add_compile_definitions(_USE_MATH_DEFINES)
+   # Define export functions for AOTI.
+   add_compile_definitions(EXPORT_AOTI_FUNCTIONS)
+ 
