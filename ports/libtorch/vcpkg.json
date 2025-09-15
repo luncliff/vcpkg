@@ -137,6 +137,12 @@
         "nnpack"
       ]
     },
+    "opencl": {
+      "description": "Build with OpenCL",
+      "dependencies": [
+        "opencl"
+      ]
+    },
     "openmp": {
       "description": "Use OpenMP for parallel code"
     },
