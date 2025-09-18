@@ -10,10 +10,6 @@
     "cpp-httplib",
     "cpuinfo",
     "eigen3",
-    {
-      "name": "fbgemm",
-      "platform": "x64"
-    },
     "flatbuffers",
     {
       "name": "flatbuffers",
@@ -22,14 +18,21 @@
     "fmt",
     "foxi",
     "fp16",
-    "gemmlowp",
-    "lapack",
+    {
+      "name": "gemmlowp",
+      "platform": "!android"
+    },
+    {
+      "name": "lapack",
+      "platform": "!android"
+    },
     "lmdb",
     "mimalloc",
-    "nlohmann-json",
+    "miniz",
     "onnx",
     "onnx-optimizer",
     "opencl",
+    "opentelemetry-cpp",
     "pocketfft",
     "protobuf",
     {
@@ -37,7 +40,6 @@
       "host": true
     },
     "pthreadpool",
-    "pybind11",
     "sleef",
     {
       "name": "vcpkg-cmake",
@@ -51,13 +53,18 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     },
-    "xnnpack"
+    "xnnpack",
+    {
+      "name": "xnnpack",
+      "features": [
+        "kleidiai"
+      ],
+      "platform": "arm64"
+    }
   ],
   "default-features": [
     "gflags",
-    "glog",
-    "opencv",
-    "zstd"
+    "glog"
   ],
   "features": {
     "cuda": {
@@ -90,7 +97,7 @@
     },
     "dist": {
       "description": "Use distributed with MPI, Gloo, libuv, TensorPipe",
-      "supports": "linux | windows",
+      "supports": "linux | windows | osx",
       "dependencies": [
         {
           "name": "gloo",
@@ -110,7 +117,7 @@
         },
         {
           "name": "tensorpipe",
-          "platform": "linux"
+          "platform": "linux | osx"
         }
       ]
     },
@@ -133,7 +140,7 @@
       ]
     },
     "mpi": {
-      "description": "Build with MPI",
+      "description": "Use MPI for Caffe2. Only available if USE_DISTRIBUTED is on",
       "dependencies": [
         "mpi"
       ]
@@ -142,14 +149,21 @@
       "description": "Build with NNPack",
       "supports": "linux | osx",
       "dependencies": [
+        {
+          "name": "kleidiai",
+          "platform": "arm64"
+        },
         "nnpack"
       ]
     },
-    "opencv": {
-      "description": "Build with OpenCV",
+    "opencl": {
+      "description": "Build with OpenCL",
       "dependencies": [
-        "opencv"
+        "opencl"
       ]
+    },
+    "openmp": {
+      "description": "Use OpenMP for parallel code"
     },
     "vulkan": {
       "description": "Build with Vulkan GPU backend",
@@ -159,14 +173,11 @@
           "host": true
         },
         "vulkan",
-        "vulkan-loader",
+        {
+          "name": "vulkan-loader",
+          "platform": "!android"
+        },
         "vulkan-memory-allocator"
-      ]
-    },
-    "zstd": {
-      "description": "Build with ZSTD",
-      "dependencies": [
-        "zstd"
       ]
     }
   }
