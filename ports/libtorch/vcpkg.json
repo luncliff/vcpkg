@@ -53,14 +53,7 @@
       "name": "vcpkg-get-python-packages",
       "host": true
     },
-    "xnnpack",
-    {
-      "name": "xnnpack",
-      "features": [
-        "kleidiai"
-      ],
-      "platform": "arm64"
-    }
+    "xnnpack"
   ],
   "default-features": [
     "gflags",
