@@ -7,18 +7,17 @@ if(VCPKG_TARGET_IS_OSX OR VCPKG_TARGET_IS_IOS)
     endif()
 endif()
 
-set(ORT_GIT_COMMIT "89746dc19a0a1ae59ebf4b16df9acab8f99f3925")
+set(ORT_GIT_COMMIT "a83fc4d58cb48eb68890dd689f94f28288cf2278")
 set(ORT_GIT_BRANCH "v${VERSION}")
 
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO microsoft/onnxruntime
     REF ${ORT_GIT_BRANCH}
-    SHA512 6fd9da2c9db62659ff10e011d02109262d9d494cc0594aa0a096146c5df907acced42e76ef409927899c856075dd4ba64a294442f65e7eabf7d4dc7049991b43
+    SHA512 373c51575ada457b8aead5d195a5f3eba62fb747b6370a2a9889fff875c40ea30af8fd49104d58cc86f79247410e829086b0979f37ca8635c6dd34960e9cc424
     PATCHES
         fix-cmake.patch # .framework install, external library workarounds(abseil-cpp, eigen3)
         fix-cmake-cuda.patch
-        fix-cmake-tensorrt.patch
 )
 
 find_program(PROTOC NAMES protoc PATHS "${CURRENT_HOST_INSTALLED_DIR}/tools/protobuf" REQUIRED NO_DEFAULT_PATH NO_CMAKE_PATH)
