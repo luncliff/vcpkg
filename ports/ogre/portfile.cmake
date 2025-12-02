@@ -16,7 +16,8 @@ vcpkg_from_github(
     REF "v${VERSION}"
     SHA512 fbacb7c94beb1ba16b9f2185556c83086be3fb89196566e91bdb7a7655adda8139f1344aaa267d5fce7d83798f20e2f8fa31a9ad823bcbd1c3090c9c13d51183
     HEAD_REF master
-    # PATCHES
+    PATCHES
+        fix-pr-3398.patch
     #     fix-dependencies.patch
     #     cfg-rel-paths.patch
     #     swig-python-polyfill.patch
