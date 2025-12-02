@@ -14,15 +14,15 @@ vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO OGRECave/ogre
     REF "v${VERSION}"
-    SHA512 637dfa427c2094688fda850a46746734dafb29eaee4d28c7f294db9ccfc2b53eb05f4d34460926807658db3c8cb614b7669d3fb190e7c8a9ee9bd1d68adf0a64
+    SHA512 fbacb7c94beb1ba16b9f2185556c83086be3fb89196566e91bdb7a7655adda8139f1344aaa267d5fce7d83798f20e2f8fa31a9ad823bcbd1c3090c9c13d51183
     HEAD_REF master
-    PATCHES
-        fix-dependencies.patch
-        cfg-rel-paths.patch
-        swig-python-polyfill.patch
-        pkgconfig.patch
-        same-install-rules-all-platforms.patch
-        cmake4.patch
+    # PATCHES
+    #     fix-dependencies.patch
+    #     cfg-rel-paths.patch
+    #     swig-python-polyfill.patch
+    #     pkgconfig.patch
+    #     same-install-rules-all-platforms.patch
+    #     cmake4.patch
 )
 
 file(REMOVE "${SOURCE_PATH}/CMake/Packages/FindOpenEXR.cmake")
