@@ -1,3 +1,6 @@
+if (VCPKG_TARGET_IS_WINDOWS)
+    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
+endif()
 if (VCPKG_TARGET_IS_LINUX)
     message(WARNING "Building with a gcc version less than 6.1 is not supported.")
     message(WARNING "${PORT} currently requires the following libraries from the system package manager:\n    mesa-common-dev\n\nThese can be installed on Ubuntu systems via apt-get install mesa-common-dev.")
@@ -90,6 +93,7 @@ set(_renderer_gn_files_to_convert
   "libANGLE/renderer/d3d/BUILD.gn D3D.cmake"
   "libANGLE/renderer/gl/BUILD.gn GL.cmake"
   "libANGLE/renderer/metal/BUILD.gn Metal.cmake"
+  "libANGLE/renderer/vulkan/BUILD.gn Vulkan.cmake"
 )
 
 foreach(_root_gni_file IN LISTS _root_gni_files_to_convert)
